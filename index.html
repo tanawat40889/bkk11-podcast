@@ -299,8 +299,8 @@ function limit() {
   return i < 0 ? Infinity : ep.questions[i].t;
 }
 function load(e, auto) {
-  if (ep) { S.pos[ep.id] = au.currentTime; save() }
-  ep = e; view = partOf(e); setColor(view);
+  if (ep && au.readyState) { S.pos[ep.id] = au.currentTime; save() }
+  ep = e; view = partOf(e); setColor(view); S.last = e.id; save();
   au.src = e.src; au.playbackRate = rates[ri];
   au.onloadedmetadata = () => {
     au.currentTime = Math.min(S.done[e.id] ? 0 : S.pos[e.id] || 0, limit());
@@ -317,7 +317,7 @@ function seek(t) {
   au.currentTime = Math.max(0, Math.min(t, max, au.duration || 0)); tick();
 }
 function tick() {
-  const d = au.duration || (ep && ep.dur) || 0, t = au.currentTime, pct = d ? t / d * 100 : 0;
+  const d = au.duration || (ep && ep.dur) || 0, t = au.readyState || !ep ? au.currentTime : (S.pos[ep.id] || 0), pct = d ? t / d * 100 : 0;
   $('cur').textContent = fmt(t); $('rem').textContent = '-' + fmt(d - t);
   $('fill').style.width = pct + '%'; $('knob').style.left = pct + '%'; $('miniLine').style.width = pct + '%';
   const ic = au.paused ? I.play : I.pause;
@@ -343,6 +343,7 @@ au.ontimeupdate = () => {
   }
 };
 au.onplay = au.onpause = () => {
+  if (ep && au.readyState) { S.pos[ep.id] = au.currentTime; save() }
   tick(); renderHome();
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = au.paused ? 'paused' : 'playing';
 };
@@ -353,7 +354,7 @@ au.onended = () => {
   n ? load(n, true) : renderHome();
 };
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { if (ep) { S.pos[ep.id] = au.currentTime; save() } }
+  if (document.hidden) { if (ep && au.readyState) { S.pos[ep.id] = au.currentTime; save() } }
   else check();
 });
 function media() {
@@ -422,8 +423,10 @@ $('reset').onclick = () => {
   if (ep) { seek(0); renderPlayer() }
   renderHome();
 };
-window.onbeforeunload = () => { if (ep) { S.pos[ep.id] = au.currentTime; save() } };
+window.onbeforeunload = () => { if (ep && au.readyState) { S.pos[ep.id] = au.currentTime; save() } };
 renderHome(); score(); tick();
+// เปิดแอปมา: โหลดตอนล่าสุดค้างไว้ที่ตำแหน่งเดิม (ยังไม่เล่นจนกว่าจะกด)
+{ const last = allEps.find(e => e.id === S.last); if (last) load(last, false) }
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 </script>
 </body>
