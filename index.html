@@ -57,7 +57,7 @@ h1{margin:0 0 6px;font-size:clamp(24px,6.5vw,34px);font-weight:800;letter-spacin
 .row:hover{background:#ffffff12}
 .row:active{background:#ffffff1f}
 .row .n{color:var(--mute);text-align:center;font-variant-numeric:tabular-nums}
-.row .t{font-weight:500;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t{font-weight:500;font-size:16px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .row.cur .t{color:var(--acc)}
 .row .s{color:var(--mute);font-size:13px;margin-top:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .row .prog{height:3px;border-radius:2px;background:var(--s3);width:72px;overflow:hidden}
@@ -107,7 +107,7 @@ h1{margin:0 0 6px;font-size:clamp(24px,6.5vw,34px);font-weight:800;letter-spacin
 .np .cover{width:100%;max-width:min(460px,52vh);margin:auto;border-radius:8px}
 .np-meta{display:flex;align-items:center;gap:12px}
 .np-meta div{flex:1;min-width:0}
-.np-meta h2{margin:0;font-size:22px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-meta h2{margin:0;font-size:20px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .np-meta p{margin:2px 0 0;color:#ffffffb3;font-size:15px}
 .qpill{font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;background:#ffffff1f;white-space:nowrap}
 .scrub{position:relative;height:18px;display:flex;align-items:center;cursor:pointer;touch-action:none}
@@ -115,9 +115,6 @@ h1{margin:0 0 6px;font-size:clamp(24px,6.5vw,34px);font-weight:800;letter-spacin
 .fill{position:absolute;inset:0 auto 0 0;background:#fff;border-radius:2px}
 .scrub:hover .fill,.scrub.drag .fill{background:var(--acc)}
 .knob{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 2px 4px #0006}
-.lock{position:absolute;inset:0 0 0 auto;background:repeating-linear-gradient(135deg,#0000 0 3px,#0006 3px 6px);border-radius:0 2px 2px 0}
-.mark{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;background:#ffd166;border:2px solid #121212;transform:translate(-50%,-50%)}
-.mark.ok{background:var(--acc)}.mark.bad{background:var(--bad)}
 .times{display:flex;justify-content:space-between;color:#ffffffb3;font-size:12px;margin-top:-12px;font-variant-numeric:tabular-nums}
 .ctl{display:flex;align-items:center;justify-content:space-between}
 .ctl button{width:48px;height:48px;display:grid;place-items:center;color:#fff}
@@ -148,6 +145,14 @@ h1{margin:0 0 6px;font-size:clamp(24px,6.5vw,34px);font-weight:800;letter-spacin
 .opt:disabled:not(.ok):not(.bad){opacity:.5}
 .fb{font-weight:600;min-height:1.4em}
 .go{align-self:stretch;padding:14px;border-radius:999px;background:#fff;color:#000;font-weight:700;font-size:16px;display:none}
+.go.ghost{background:none;color:var(--mute);border:1px solid var(--s3)}
+.qdots{display:flex;gap:4px}.qdots i{flex:1;height:4px;border-radius:2px;background:var(--s3)}
+.qdots i.ok{background:var(--acc)}.qdots i.bad{background:var(--bad)}.qdots i.now{background:#fff}
+.result{text-align:center;padding:8px 0}
+.result .big{font-size:56px;font-weight:800;line-height:1.1}.result .big small{font-size:24px;color:var(--mute)}
+.result p{color:var(--mute);margin:6px 0 0}
+button.badge{cursor:pointer}
+.badge.todo{background:var(--acc);color:#000}
 </style>
 </head>
 <body>
@@ -182,8 +187,8 @@ h1{margin:0 0 6px;font-size:clamp(24px,6.5vw,34px);font-weight:800;letter-spacin
       <div><small>กำลังเล่นจาก</small><b id="npFrom"></b></div><span></span>
     </div>
     <div id="npCover" style="display:flex;flex:1;align-items:center"></div>
-    <div class="np-meta"><div><h2 id="npT"></h2><p>BKK11 Podcast</p></div><span class="qpill" id="npQ"></span></div>
-    <div class="scrub" id="scrub"><div class="track" id="track"><div class="fill" id="fill"></div><div class="lock" id="lock"></div><div class="knob" id="knob"></div></div></div>
+    <div class="np-meta"><div><h2 id="npT"></h2><p id="npSub"></p></div><span class="qpill" id="npQ"></span></div>
+    <div class="scrub" id="scrub"><div class="track" id="track"><div class="fill" id="fill"></div><div class="knob" id="knob"></div></div></div>
     <div class="times"><span id="cur">0:00</span><span id="rem">-0:00</span></div>
     <div class="ctl">
       <button class="rate" id="rate" aria-label="ความเร็ว">1x</button>
@@ -197,11 +202,13 @@ h1{margin:0 0 6px;font-size:clamp(24px,6.5vw,34px);font-weight:800;letter-spacin
 
 <div class="modal" id="modal"><div class="sheet">
   <div class="grab"></div>
-  <div class="tag"><svg class="ic" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 15.5a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6zm1.3-5.1v.6h-2.6v-1.2c0-1.4 1-2 1.8-2.5.7-.4 1.1-.7 1.1-1.3a1.6 1.6 0 0 0-3.2 0H7.8a4.2 4.2 0 0 1 8.4 0c0 1.9-1.3 2.7-2.2 3.2-.5.3-.7.5-.7 1.2z"/></svg><span id="qTag">คำถามระหว่างฟัง</span></div>
+  <div class="tag"><svg class="ic" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 15.5a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6zm1.3-5.1v.6h-2.6v-1.2c0-1.4 1-2 1.8-2.5.7-.4 1.1-.7 1.1-1.3a1.6 1.6 0 0 0-3.2 0H7.8a4.2 4.2 0 0 1 8.4 0c0 1.9-1.3 2.7-2.2 3.2-.5.3-.7.5-.7 1.2z"/></svg><span id="qTag">คำถามท้ายตอน</span></div>
+  <div class="qdots" id="qdots"></div>
   <div class="q" id="qText"></div>
   <div class="opts" id="opts"></div>
   <div class="fb" id="fb"></div>
-  <button class="go" id="go">ฟังต่อ</button>
+  <button class="go" id="go">ข้อต่อไป</button>
+  <button class="go ghost" id="close">ปิด</button>
 </div></div>
 
 <audio id="au" preload="metadata" playsinline></audio>
@@ -215,19 +222,20 @@ const I = {
   head: '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-9 9v6a3 3 0 0 0 3 3h1a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5v-1a7 7 0 0 1 14 0v1h-2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1a3 3 0 0 0 3-3v-6a9 9 0 0 0-9-9z"/></svg>'
 };
 let S; try { S = JSON.parse(localStorage.getItem(KEY)) || {} } catch { S = {} }
-S.ans ??= {}; S.pos ??= {}; S.done ??= {};
+S.ans ??= {}; S.pos ??= {}; S.done ??= {}; S.fin ??= {};
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch {} };
 const fmt = s => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') };
 const mins = s => Math.max(1, Math.round(s / 60)) + ' นาที';
-const qid = (e, i) => e.id + ':' + i;
 const allEps = P.parts.flatMap(p => p.episodes);
 const partOf = e => P.parts.find(p => p.episodes.includes(e));
 let view = P.parts[0], ep = null, busy = false, rates = [1, 1.25, 1.5, 2, .75], ri = 0;
 
 const cover = (p, small) => `<div class="cover">${small ? '' : `<div class="c-t">ติว<br>ธรรมะ</div><div class="c-b">BKK11</div>`}<div class="c-ic">${I.head}</div>${small ? '' : `<div class="c-p">${p.name}</div>`}</div>`;
 const setColor = p => document.documentElement.style.setProperty('--pc', p.color || '#7c5cff');
-const answered = e => e.questions.filter((q, i) => qid(e, i) in S.ans).length;
-const correct = e => e.questions.filter((q, i) => S.ans[qid(e, i)] === q.a).length;
+const qk = (e, i) => e.id + ':' + i;
+const answered = e => e.questions.filter((q, i) => qk(e, i) in S.ans).length;
+const correct = e => e.questions.filter((q, i) => S.ans[qk(e, i)] === q.a).length;
+const quizOpen = e => S.fin[e.id] && answered(e) < e.questions.length;
 const posOf = e => e === ep ? au.currentTime : (S.pos[e.id] || 0);
 
 function score() {
@@ -243,7 +251,7 @@ function renderHome() {
   $('heroCover').innerHTML = cover(view);
   $('heroTitle').textContent = `ติวธรรมะ ${view.name}`;
   const tot = view.episodes.reduce((a, e) => a + (e.dur || 0), 0);
-  $('heroMeta').textContent = view.episodes.length ? `พอดแคสต์ · ${view.episodes.length} ตอน · ${mins(tot)} · ฟังไปตอบคำถามไป` : 'เร็ว ๆ นี้';
+  $('heroMeta').textContent = view.episodes.length ? `พอดแคสต์ · ${view.episodes.length} ตอน · ${mins(tot)} · ฟังจบแล้วตอบคำถามท้ายตอน` : 'เร็ว ๆ นี้';
   $('bigplay').disabled = !view.episodes.length;
   $('bigplay').innerHTML = ep && partOf(ep) === view && !au.paused ? I.pause : I.play;
   renderList();
@@ -257,11 +265,13 @@ function renderList() {
     const left = done && !pos ? '✓ ฟังจบแล้ว' : pos > 1 ? `เหลือ ${mins(d - pos)}` : mins(d);
     return `<li class="row${cur ? ' cur' : ''}" data-i="${i}">
       <div class="n">${cur ? `<div class="eq${au.paused ? ' stop' : ''}"><i></i><i></i><i></i></div>` : i + 1}</div>
-      <div style="min-width:0"><div class="t">${e.name}</div>
-        <div class="s">${pos > 1 && !done ? `<span class="prog"><i style="width:${Math.min(100, pos / d * 100)}%"></i></span>` : ''}<span>${left}</span>
-        ${nq ? `<span class="badge${na === nq ? ' ok' : ''}">${na === nq ? `✓ ${correct(e)}/${nq} ข้อ` : `❓ ${nq} คำถาม`}</span>` : ''}</div></div>
+      <div style="min-width:0"><div class="t">${e.title || e.name}</div>
+        <div class="s"><span>${e.name}</span>${pos > 1 && !done ? `<span class="prog"><i style="width:${Math.min(100, pos / d * 100)}%"></i></span>` : ''}<span>${left}</span>
+        ${!nq ? '' : na === nq ? `<button class="badge ok" data-q="${i}">🏆 ${correct(e)}/${nq} ข้อ</button>`
+          : S.fin[e.id] ? `<button class="badge todo" data-q="${i}">📝 ทำแบบทดสอบ</button>` : `<span class="badge">📝 ${nq} ข้อท้ายตอน</span>`}</div></div>
       <div class="pp">${cur && !au.paused ? I.pause : I.play}</div></li>`;
   }).join('');
+  L.querySelectorAll('button.badge').forEach(b => b.onclick = ev => { ev.stopPropagation(); quiz(view.episodes[b.dataset.q]) });
   L.querySelectorAll('.row').forEach(r => r.onclick = () => {
     const e = view.episodes[r.dataset.i];
     e === ep ? toggle() : load(e, true);
@@ -272,49 +282,28 @@ function renderPlayer() {
   const p = partOf(ep), nq = ep.questions.length, na = answered(ep);
   $('miniCover').innerHTML = $('npCover').innerHTML = '';
   $('miniCover').innerHTML = cover(p, true); $('npCover').innerHTML = cover(p);
-  $('miniT').textContent = ep.name; $('miniA').textContent = `ติวธรรมะ ${p.name} · BKK11 Podcast`;
-  $('npT').textContent = ep.name; $('npFrom').textContent = `ติวธรรมะ ${p.name}`;
-  $('npQ').textContent = nq ? `❓ ${na}/${nq}` : ''; $('npQ').style.display = nq ? '' : 'none';
-  $('miniQ').textContent = nq && na < nq ? `❓ ${nq - na}` : '';
+  $('miniT').textContent = ep.title || ep.name; $('miniA').textContent = `${p.name} · ${ep.name} · BKK11 Podcast`;
+  $('npT').textContent = ep.title || ep.name; $('npSub').textContent = `${p.name} · ${ep.name}`; $('npFrom').textContent = `ติวธรรมะ ${p.name}`;
+  $('npQ').textContent = !nq ? '' : na === nq ? `🏆 ${correct(ep)}/${nq}` : `📝 ${nq} ข้อท้ายตอน`; $('npQ').style.display = nq ? '' : 'none';
+  $('miniQ').textContent = quizOpen(ep) ? '📝' : '';
   const i = p.episodes.indexOf(ep); $('next').disabled = i === p.episodes.length - 1;
   $('mini').classList.add('on');
-  renderMarks();
-}
-function renderMarks() {
-  document.querySelectorAll('.mark').forEach(m => m.remove());
-  const d = au.duration || ep.dur;
-  if (!d) return;
-  ep.questions.forEach((q, i) => {
-    const m = document.createElement('div'), a = S.ans[qid(ep, i)];
-    m.className = 'mark' + (a === undefined ? '' : a === q.a ? ' ok' : ' bad');
-    m.style.left = (q.t / d * 100) + '%';
-    $('track').append(m);
-  });
-  const L = limit();
-  $('lock').style.width = L === Infinity ? '0' : Math.max(0, 100 - L / d * 100) + '%';
-}
-// จุดที่เลื่อนไปได้ไกลสุด = คำถามแรกที่ยังไม่ได้ตอบ
-function limit() {
-  const i = ep.questions.findIndex((q, k) => !(qid(ep, k) in S.ans));
-  return i < 0 ? Infinity : ep.questions[i].t;
 }
 function load(e, auto) {
   if (ep && au.readyState) { S.pos[ep.id] = au.currentTime; save() }
   ep = e; view = partOf(e); setColor(view); S.last = e.id; save();
   au.src = e.src; au.playbackRate = rates[ri];
   au.onloadedmetadata = () => {
-    au.currentTime = Math.min(S.done[e.id] ? 0 : S.pos[e.id] || 0, limit());
-    au.playbackRate = rates[ri]; renderMarks(); tick();
+    au.currentTime = S.done[e.id] ? 0 : S.pos[e.id] || 0;
+    au.playbackRate = rates[ri]; tick();
     if (auto) au.play().catch(() => {});
   };
   renderHome(); renderPlayer(); media(); tick();
 }
 function toggle() { au.paused ? au.play().catch(e => alert('เล่นเสียงไม่ได้: ' + e.message)) : au.pause() }
-// เลื่อนไปข้างหน้าได้ไม่เกินคำถามที่ยังไม่ตอบ (ถ้าฟังเลยไปแล้วตอนอยู่เบื้องหลัง ก็ไม่ดึงถอยหลัง)
 function seek(t) {
   if (!ep) return;
-  const max = Math.max(limit(), t < au.currentTime ? 0 : au.currentTime);
-  au.currentTime = Math.max(0, Math.min(t, max, au.duration || 0)); tick();
+  au.currentTime = Math.max(0, Math.min(t, au.duration || 0)); tick();
 }
 function tick() {
   const d = au.duration || (ep && ep.dur) || 0, t = au.readyState || !ep ? au.currentTime : (S.pos[ep.id] || 0), pct = d ? t / d * 100 : 0;
@@ -326,16 +315,9 @@ function tick() {
     navigator.mediaSession.setPositionState({ duration: au.duration, position: Math.min(t, au.duration), playbackRate: au.playbackRate });
   } catch {}
 }
-// คำถามที่ถึงเวลาแล้วแต่ยังไม่ตอบ; ถ้าแอปอยู่เบื้องหลังจะเล่นต่อ แล้วค่อยถามตอนกลับมา
-function check() {
-  if (busy || !ep || document.hidden) return false;
-  const i = ep.questions.findIndex((q, k) => !(qid(ep, k) in S.ans) && au.currentTime >= q.t);
-  if (i >= 0) ask(i);
-  return i >= 0;
-}
 let lastSave = 0;
 au.ontimeupdate = () => {
-  tick(); check();
+  tick();
   if (ep && Math.abs(au.currentTime - lastSave) >= 5) {
     lastSave = au.currentTime; S.pos[ep.id] = au.currentTime;
     if (au.currentTime > 5) delete S.done[ep.id];
@@ -348,19 +330,21 @@ au.onplay = au.onpause = () => {
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = au.paused ? 'paused' : 'playing';
 };
 au.onerror = () => { if (ep) alert('โหลดไฟล์เสียงไม่ได้ (' + ep.src + ')') };
+// ฟังจบ: มีคำถามท้ายตอนก็เปิดแบบทดสอบ (ถ้าแอปอยู่เบื้องหลัง รอเปิดตอนกลับมา) ไม่มีก็เล่นตอนต่อไป
+let pending = null;
 au.onended = () => {
-  S.pos[ep.id] = 0; S.done[ep.id] = 1; save();
-  const eps = partOf(ep).episodes, n = eps[eps.indexOf(ep) + 1];
-  n ? load(n, true) : renderHome();
+  S.pos[ep.id] = 0; S.done[ep.id] = 1; S.fin[ep.id] = 1; save(); renderHome(); renderPlayer();
+  if (quizOpen(ep)) document.hidden ? pending = ep : quiz(ep);
+  else next();
 };
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { if (ep && au.readyState) { S.pos[ep.id] = au.currentTime; save() } }
-  else check();
+  else if (pending) { const e = pending; pending = null; quiz(e) }
 });
 function media() {
   if (!('mediaSession' in navigator)) return;
   const ms = navigator.mediaSession, p = partOf(ep);
-  ms.metadata = new MediaMetadata({ title: ep.name, artist: 'BKK11 Podcast', album: `ติวธรรมะ ${p.name}`,
+  ms.metadata = new MediaMetadata({ title: ep.title || ep.name, artist: 'BKK11 Podcast', album: `ติวธรรมะ ${p.name}`,
     artwork: [192, 512].map(n => ({ src: `icons/icon-${n}.png`, sizes: `${n}x${n}`, type: 'image/png' })) });
   const h = {
     play: () => au.play(), pause: () => au.pause(),
@@ -372,29 +356,58 @@ function media() {
   };
   for (const k in h) try { ms.setActionHandler(k, h[k]) } catch {}
 }
-function next() { const eps = partOf(ep).episodes, n = eps[eps.indexOf(ep) + 1]; if (n) load(n, true) }
+function next() { if (!ep) return; const eps = partOf(ep).episodes, n = eps[eps.indexOf(ep) + 1]; if (n) load(n, true) }
+// แบบทดสอบท้ายตอน: ไล่ข้อที่ยังไม่ตอบ จบแล้วสรุปคะแนน
+let qe = null;
+function quiz(e) {
+  qe = e; au.pause(); $('npClose').click();
+  const i = e.questions.findIndex((q, k) => !(qk(e, k) in S.ans));
+  i < 0 ? result() : ask(i);
+  $('modal').classList.add('on');
+}
+function dots(cur) {
+  $('qdots').innerHTML = qe.questions.map((q, k) => {
+    const a = S.ans[qk(qe, k)];
+    return `<i class="${a === undefined ? (k === cur ? 'now' : '') : a === q.a ? 'ok' : 'bad'}"></i>`;
+  }).join('');
+}
 function ask(i) {
-  busy = true; au.pause();
-  const q = ep.questions[i];
-  $('qTag').textContent = `คำถามที่ ${i + 1} จาก ${ep.questions.length}`;
-  $('qText').textContent = q.q; $('fb').textContent = ''; $('go').style.display = 'none';
-  const box = $('opts'); box.innerHTML = '';
+  const q = qe.questions[i], n = qe.questions.length;
+  $('qTag').textContent = `คำถามท้ายตอน · ข้อ ${i + 1}/${n}`; dots(i);
+  $('qText').textContent = q.q; $('fb').textContent = ''; $('go').style.display = $('close').style.display = 'none';
+  const box = $('opts'); box.innerHTML = ''; box.style.display = '';
   q.choices.forEach((c, k) => {
     const b = document.createElement('button');
     b.className = 'opt'; b.textContent = c;
     b.onclick = () => {
-      S.ans[qid(ep, i)] = k; save();
+      S.ans[qk(qe, i)] = k; save(); dots(-1);
       [...box.children].forEach((x, j) => { x.disabled = true; if (j === q.a) x.classList.add('ok') });
       if (k !== q.a) b.classList.add('bad');
       $('fb').textContent = k === q.a ? '🎉 ถูกต้อง!' : '😅 ยังไม่ถูก' + (q.explain ? ' — ' + q.explain : '');
       $('fb').style.color = k === q.a ? 'var(--acc)' : 'var(--bad)';
+      const more = qe.questions.some((q, j) => !(qk(qe, j) in S.ans));
+      $('go').textContent = more ? 'ข้อต่อไป' : 'ดูคะแนน';
       $('go').style.display = 'block'; score(); renderPlayer(); renderList();
     };
     box.append(b);
   });
-  $('modal').classList.add('on');
 }
-$('go').onclick = () => { $('modal').classList.remove('on'); busy = false; if (!check()) au.play().catch(() => {}) };
+function result() {
+  const n = qe.questions.length, ok = correct(qe), eps = partOf(qe).episodes, nx = eps[eps.indexOf(qe) + 1];
+  $('qTag').textContent = `${partOf(qe).name} ${qe.name} · สรุปผล`; dots(-1); $('opts').style.display = 'none'; $('fb').textContent = '';
+  $('qText').innerHTML = `<div class="result"><div class="big">${ok}<small>/${n}</small></div><p>${ok === n ? 'เต็ม! สุดยอดไปเลย 🏆' : ok >= n / 2 ? 'เก่งมาก ไปต่อกันเลย 💪' : 'ลองฟังทวนอีกรอบนะ 🙏'}</p></div>`;
+  $('go').textContent = nx ? `ฟัง ${nx.name} ต่อ ▶` : 'เสร็จสิ้น';
+  $('go').style.display = $('close').style.display = 'block'; $('close').style.display = nx ? 'block' : 'none';
+  qe.next = nx;
+}
+const closeQuiz = () => { $('modal').classList.remove('on'); $('opts').style.display = '' };
+$('go').onclick = () => {
+  const i = qe.questions.findIndex((q, k) => !(qk(qe, k) in S.ans));
+  if (i >= 0) return ask(i);
+  if ($('opts').style.display !== 'none') return result();
+  closeQuiz(); if (qe.next) load(qe.next, true);
+};
+$('close').onclick = closeQuiz;
 
 $('bigplay').onclick = () => {
   if (ep && partOf(ep) === view) return toggle();
@@ -419,7 +432,7 @@ $('rate').onclick = () => { ri = (ri + 1) % rates.length; au.playbackRate = rate
 })();
 $('reset').onclick = () => {
   if (!confirm('ล้างคะแนนและตำแหน่งที่ฟังทั้งหมด?')) return;
-  S = { ans: {}, pos: {}, done: {} }; save(); score();
+  S = { ans: {}, pos: {}, done: {}, fin: {} }; save(); score();
   if (ep) { seek(0); renderPlayer() }
   renderHome();
 };
