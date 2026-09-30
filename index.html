@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1220" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="BKK11 Podcast" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/favicon-64.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<title>BKK11 Podcast</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#0f1220;--panel:#181c30;--line:#2b3150;--text:#eef0ff;--mute:#9aa1c7;--gold:#ffd166;--ok:#3ee08f;--bad:#ff5d73;--acc:#b794ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--text);font-family:'Prompt',sans-serif;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+.app{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{margin:0;font-size:clamp(24px,6vw,36px);font-weight:800}h1 span{color:var(--gold)}
+.score{color:var(--mute)}.score b{color:var(--gold)}
+.tabs{display:flex;gap:8px}
+.tab{flex:1;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:600 16px 'Prompt';cursor:pointer}
+.tab.on{background:var(--acc);color:#140b2a;border-color:var(--acc)}
+.tab:disabled{opacity:.4;cursor:default}
+.eps{display:flex;flex-direction:column;gap:8px}
+.ep{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:14px;background:var(--panel);border:1px solid var(--line);cursor:pointer;font:600 17px 'Prompt';color:var(--text);text-align:left}
+.ep.on{border-color:var(--gold)}.ep small{color:var(--mute);font-weight:400}
+.soon{padding:32px;text-align:center;color:var(--mute);background:var(--panel);border-radius:14px;border:1px dashed var(--line)}
+.player{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.player h2{margin:0;font-size:20px}
+.bar{position:relative;height:10px;background:var(--line);border-radius:6px;cursor:pointer}
+.fill{position:absolute;inset:0 auto 0 0;background:var(--acc);border-radius:6px}
+.lock{position:absolute;inset:0 0 0 auto;background:repeating-linear-gradient(45deg,#0000 0 4px,#fff1 4px 8px);border-radius:0 6px 6px 0}
+.mark{position:absolute;top:-3px;width:4px;height:16px;border-radius:2px;background:var(--gold);transform:translateX(-2px)}
+.mark.ok{background:var(--ok)}.mark.bad{background:var(--bad)}
+.row{display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-size:14px}
+.ctl{display:flex;justify-content:center;gap:12px;align-items:center}
+.btn{border:0;border-radius:50%;width:52px;height:52px;background:var(--line);color:var(--text);font:600 15px 'Prompt';cursor:pointer}
+.btn.big{width:68px;height:68px;background:var(--gold);color:#1a1400;font-size:26px}
+.rate{border-radius:10px;width:auto;height:36px;padding:0 12px}
+.modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+.modal.on{display:flex}
+.card{width:100%;max-width:560px;background:var(--panel);border:2px solid var(--gold);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px;animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+.card .tag{color:var(--gold);font-weight:600}
+.card .q{font-size:20px;font-weight:600;line-height:1.4}
+.opt{padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:400 17px 'Prompt';text-align:left;cursor:pointer}
+.opt.ok{background:var(--ok);color:#03210f;border-color:var(--ok)}
+.opt.bad{background:var(--bad);color:#2a0008;border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.fb{min-height:1.4em;font-weight:600}
+.go{align-self:flex-end;padding:12px 22px;border-radius:12px;border:0;background:var(--gold);color:#1a1400;font:600 17px 'Prompt';cursor:pointer;display:none}
+.reset{align-self:center;background:none;border:0;color:var(--mute);font:400 13px 'Prompt';text-decoration:underline;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app">
+  <div><h1>BKK11 <span>Podcast</span></h1><div class="score" id="score"></div></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="eps" id="eps"></div>
+  <div class="player" id="player" hidden>
+    <h2 id="now"></h2>
+    <div class="bar" id="bar"><div class="fill" id="fill"></div><div class="lock" id="lock"></div></div>
+    <div class="row"><span id="cur">0:00</span><span id="qs"></span><span id="dur">0:00</span></div>
+    <div class="ctl">
+      <button class="btn" id="back">-15</button>
+      <button class="btn big" id="play">▶</button>
+      <button class="btn" id="fwd">+15</button>
+      <button class="btn rate" id="rate">1x</button>
+    </div>
+  </div>
+  <button class="reset" id="reset">รีเซ็ตคะแนนทั้งหมด</button>
+</div>
+<div class="modal" id="modal"><div class="card">
+  <div class="tag">❓ คำถามระหว่างฟัง</div>
+  <div class="q" id="qText"></div>
+  <div class="eps" id="opts"></div>
+  <div class="fb" id="fb"></div>
+  <button class="go" id="go">ฟังต่อ ▶</button>
+</div></div>
+<audio id="au" preload="metadata" playsinline></audio>
+<script src="data.js"></script>
+<script>
+const P = window.PODCAST, $ = id => document.getElementById(id), au = $('au');
+const KEY = 'bkk11-podcast';
+let S; try { S = JSON.parse(localStorage.getItem(KEY)) || {} } catch { S = {} }
+S.ans ??= {}; S.pos ??= {};
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch {} };
+const fmt = s => { s = Math.floor(s || 0); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') };
+const qid = (ep, i) => ep.id + ':' + i;
+const allEps = P.parts.flatMap(p => p.episodes);
+let part = P.parts[0], ep = null, busy = false, rates = [1, 1.25, 1.5, 2, .75], ri = 0;
+
+function score() {
+  let ok = 0, tot = 0;
+  allEps.forEach(e => e.questions.forEach((q, i) => { tot++; if (S.ans[qid(e, i)] === q.a) ok++ }));
+  $('score').innerHTML = `คะแนนรวม <b>${ok}</b> / ${tot}`;
+}
+function epStat(e) {
+  const done = e.questions.filter((q, i) => qid(e, i) in S.ans).length;
+  const ok = e.questions.filter((q, i) => S.ans[qid(e, i)] === q.a).length;
+  return e.questions.length ? `✅ ${ok} / ${e.questions.length}${done < e.questions.length ? ` · ตอบแล้ว ${done}` : ''}` : '';
+}
+// จุดที่เลื่อนไปได้ไกลสุด = คำถามแรกที่ยังไม่ได้ตอบ
+function limit() {
+  const i = ep.questions.findIndex((q, k) => !(qid(ep, k) in S.ans));
+  return i < 0 ? Infinity : ep.questions[i].t;
+}
+function renderTabs() {
+  $('tabs').innerHTML = '';
+  P.parts.forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'tab' + (p === part ? ' on' : ''); b.textContent = p.name;
+    b.onclick = () => { part = p; renderTabs(); renderEps() };
+    $('tabs').append(b);
+  });
+}
+function renderEps() {
+  const box = $('eps'); box.innerHTML = '';
+  if (!part.episodes.length) { box.innerHTML = '<div class="soon">🔒 เร็ว ๆ นี้</div>'; return }
+  part.episodes.forEach(e => {
+    const b = document.createElement('button');
+    b.className = 'ep' + (e === ep ? ' on' : '');
+    b.innerHTML = `<span>🎧 ${e.name}</span><small>${epStat(e)}</small>`;
+    b.onclick = () => load(e);
+    box.append(b);
+  });
+}
+function renderMarks() {
+  document.querySelectorAll('.mark').forEach(m => m.remove());
+  if (!au.duration) return;
+  ep.questions.forEach((q, i) => {
+    const m = document.createElement('div'), a = S.ans[qid(ep, i)];
+    m.className = 'mark' + (a === undefined ? '' : a === q.a ? ' ok' : ' bad');
+    m.style.left = (q.t / au.duration * 100) + '%';
+    $('bar').append(m);
+  });
+  const L = limit();
+  $('lock').style.width = L === Infinity ? '0' : (100 - L / au.duration * 100) + '%';
+  $('qs').textContent = ep.questions.length ? `คำถาม ${ep.questions.filter((q, i) => qid(ep, i) in S.ans).length}/${ep.questions.length}` : '';
+}
+function load(e, auto) {
+  if (ep) { S.pos[ep.id] = au.currentTime; save() }
+  part = P.parts.find(p => p.episodes.includes(e)); renderTabs();
+  ep = e; au.src = e.src; $('player').hidden = false; $('now').textContent = `${part.name} · ${e.name}`;
+  au.onloadedmetadata = () => {
+    au.currentTime = Math.min(S.pos[e.id] || 0, limit()); $('dur').textContent = fmt(au.duration); renderMarks(); tick();
+    if (auto) au.play().catch(() => {});
+  };
+  renderEps(); media();
+}
+// เลื่อนไปข้างหน้าได้ไม่เกินคำถามที่ยังไม่ตอบ (ถ้าฟังเลยไปแล้วตอนอยู่เบื้องหลัง ก็ไม่ดึงถอยหลัง)
+function seek(t) {
+  const max = Math.max(limit(), t < au.currentTime ? 0 : au.currentTime);
+  au.currentTime = Math.max(0, Math.min(t, max, au.duration || 0)); tick();
+}
+function tick() {
+  $('cur').textContent = fmt(au.currentTime);
+  $('fill').style.width = au.duration ? (au.currentTime / au.duration * 100) + '%' : 0;
+  $('play').textContent = au.paused ? '▶' : '❚❚';
+  if ('mediaSession' in navigator && au.duration) try {
+    navigator.mediaSession.setPositionState({ duration: au.duration, position: Math.min(au.currentTime, au.duration), playbackRate: au.playbackRate });
+  } catch {}
+}
+// คำถามที่ถึงเวลาแล้วแต่ยังไม่ตอบ; ถ้าแอปอยู่เบื้องหลังจะเล่นต่อ แล้วค่อยถามตอนกลับมา
+function check() {
+  if (busy || !ep || document.hidden) return false;
+  const i = ep.questions.findIndex((q, k) => !(qid(ep, k) in S.ans) && au.currentTime >= q.t);
+  if (i >= 0) ask(i);
+  return i >= 0;
+}
+let lastSave = 0;
+au.ontimeupdate = () => {
+  tick(); check();
+  if (ep && Math.abs(au.currentTime - lastSave) >= 5) { lastSave = au.currentTime; S.pos[ep.id] = au.currentTime; save() }
+};
+au.onplay = au.onpause = () => { tick(); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = au.paused ? 'paused' : 'playing' };
+au.onended = () => {
+  S.pos[ep.id] = 0; save();
+  const eps = part.episodes, n = eps[eps.indexOf(ep) + 1];
+  if (n) load(n, true);
+};
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { if (ep) { S.pos[ep.id] = au.currentTime; save() } }
+  else check();
+});
+function media() {
+  if (!('mediaSession' in navigator)) return;
+  const ms = navigator.mediaSession;
+  ms.metadata = new MediaMetadata({ title: ep.name, artist: P.title, album: part.name,
+    artwork: [192, 512].map(n => ({ src: `icons/icon-${n}.png`, sizes: `${n}x${n}`, type: 'image/png' })) });
+  const h = {
+    play: () => au.play(), pause: () => au.pause(),
+    seekbackward: d => seek(au.currentTime - (d.seekOffset || 15)),
+    seekforward: d => seek(au.currentTime + (d.seekOffset || 15)),
+    seekto: d => seek(d.seekTime),
+    previoustrack: () => seek(0),
+    nexttrack: () => { const n = part.episodes[part.episodes.indexOf(ep) + 1]; if (n) load(n, true) }
+  };
+  for (const k in h) try { ms.setActionHandler(k, h[k]) } catch {}
+}
+function ask(i) {
+  busy = true; au.pause();
+  const q = ep.questions[i];
+  $('qText').textContent = q.q; $('fb').textContent = ''; $('go').style.display = 'none';
+  const box = $('opts'); box.innerHTML = '';
+  q.choices.forEach((c, k) => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = c;
+    b.onclick = () => {
+      S.ans[qid(ep, i)] = k; save();
+      [...box.children].forEach((x, j) => { x.disabled = true; if (j === q.a) x.classList.add('ok') });
+      if (k !== q.a) b.classList.add('bad');
+      $('fb').textContent = k === q.a ? '🎉 ถูกต้อง!' : '😅 ยังไม่ถูก' + (q.explain ? ' — ' + q.explain : '');
+      $('fb').style.color = k === q.a ? 'var(--ok)' : 'var(--bad)';
+      $('go').style.display = 'block'; score(); renderMarks(); renderEps();
+    };
+    box.append(b);
+  });
+  $('modal').classList.add('on');
+}
+$('go').onclick = () => { $('modal').classList.remove('on'); busy = false; if (!check()) au.play().catch(() => {}) };
+$('play').onclick = () => au.paused ? au.play().catch(e => alert('เล่นเสียงไม่ได้: ' + e.message)) : au.pause();
+au.onerror = () => alert('โหลดไฟล์เสียงไม่ได้ (' + (ep && ep.src) + ')');
+$('back').onclick = () => seek(au.currentTime - 15);
+$('fwd').onclick = () => seek(au.currentTime + 15);
+$('rate').onclick = () => { ri = (ri + 1) % rates.length; au.playbackRate = rates[ri]; $('rate').textContent = rates[ri] + 'x' };
+$('bar').onclick = e => { const r = $('bar').getBoundingClientRect(); seek((e.clientX - r.left) / r.width * au.duration) };
+$('reset').onclick = () => { if (confirm('ล้างคะแนนและตำแหน่งที่ฟังทั้งหมด?')) { S = { ans: {}, pos: {} }; save(); score(); renderEps(); if (ep) { seek(0); renderMarks() } } };
+window.onbeforeunload = () => { if (ep) { S.pos[ep.id] = au.currentTime; save() } };
+renderTabs(); renderEps(); score();
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>
