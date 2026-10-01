@@ -24,10 +24,13 @@ svg{display:block;fill:currentColor}
 .ic{width:24px;height:24px}
 
 /* ---------- Home ---------- */
-.home{max-width:760px;margin:0 auto;padding-bottom:calc(96px + var(--sb))}
-.hero{position:relative;padding:calc(16px + var(--st)) 16px 20px;
+.home{max-width:760px;margin:0 auto;padding-bottom:calc(150px + var(--sb))}
+.hero{position:relative;padding:calc(28px + var(--st)) 16px 20px;
   background:linear-gradient(180deg,color-mix(in srgb,var(--pc) 75%,#000) 0%,color-mix(in srgb,var(--pc) 35%,var(--bg)) 55%,var(--bg) 100%);transition:background .4s}
-.chips{display:flex;gap:8px;margin-bottom:24px;overflow-x:auto;scrollbar-width:none}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:28px 8px calc(8px + var(--sb));pointer-events:none;
+  background:linear-gradient(180deg,#12121200 0,#121212e6 28px,#121212 60%)}
+.dock-in{max-width:744px;margin:0 auto;display:flex;flex-direction:column;gap:8px;pointer-events:auto}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;justify-content:center}
 .chip{flex:none;padding:7px 16px;border-radius:999px;background:#ffffff1f;font-size:14px;font-weight:500;white-space:nowrap}
 .chip.on{background:var(--acc);color:#000}
 .chip.locked{color:var(--mute)}
@@ -78,11 +81,11 @@ h1{margin:0 0 6px;font-size:clamp(24px,6.5vw,34px);font-weight:800;letter-spacin
 .foot button{text-decoration:underline;color:var(--dim)}
 
 /* ---------- Mini player ---------- */
-.mini{position:fixed;left:8px;right:8px;bottom:calc(8px + var(--sb));max-width:744px;margin:0 auto;z-index:5;
-  display:grid;grid-template-columns:40px 1fr auto auto;align-items:center;gap:10px;padding:8px 8px 10px;border-radius:8px;
+.mini{position:relative;display:none;grid-template-columns:40px 1fr auto auto;align-items:center;gap:10px;padding:8px 8px 10px;border-radius:8px;
   background:color-mix(in srgb,var(--pc) 45%,#1a1a1a);box-shadow:0 6px 20px #0009;cursor:pointer;
-  transform:translateY(140%);transition:transform .3s cubic-bezier(.2,.8,.2,1),background .4s}
-.mini.on{transform:none}
+  transition:background .4s}
+.mini.on{display:grid;grid-template-columns:40px 1fr auto auto;animation:up .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
 .mini .cover{border-radius:4px;box-shadow:none}
 .mini .t{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mini .a{font-size:12px;color:#ffffffb3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -158,7 +161,6 @@ button.badge{cursor:pointer}
 <body>
 <main class="home">
   <section class="hero">
-    <nav class="chips" id="chips"></nav>
     <div id="heroCover"></div>
     <h1 id="heroTitle"></h1>
     <div class="by"><img src="icons/icon-192.png" alt="" /><span>BKK11 Podcast</span></div>
@@ -172,6 +174,8 @@ button.badge{cursor:pointer}
   <div class="foot"><button id="reset">รีเซ็ตคะแนนและตำแหน่งที่ฟังทั้งหมด</button></div>
 </main>
 
+<div class="dock"><div class="dock-in">
+<nav class="chips" id="chips"></nav>
 <div class="mini" id="mini">
   <div id="miniCover"></div>
   <div style="min-width:0"><div class="t" id="miniT"></div><div class="a" id="miniA"></div></div>
@@ -179,6 +183,7 @@ button.badge{cursor:pointer}
   <button class="mp" id="miniPlay" aria-label="เล่น/หยุด"></button>
   <div class="line"><i id="miniLine"></i></div>
 </div>
+</div></div>
 
 <section class="np" id="np" aria-hidden="true">
   <div class="np-in">
@@ -286,11 +291,11 @@ function renderPlayer() {
   $('npT').textContent = ep.title || ep.name; $('npSub').textContent = `${p.name} · ${ep.name}`; $('npFrom').textContent = `ติวธรรมะ ${p.name}`;
   $('npQ').textContent = !nq ? '' : na === nq ? `🏆 ${correct(ep)}/${nq}` : `📝 ${nq} ข้อท้ายตอน`; $('npQ').style.display = nq ? '' : 'none';
   $('miniQ').textContent = quizOpen(ep) ? '📝' : '';
-  const i = p.episodes.indexOf(ep); $('next').disabled = i === p.episodes.length - 1;
+  $('next').disabled = !after(ep);
   $('mini').classList.add('on');
 }
 function load(e, auto) {
-  if (ep && au.readyState) { S.pos[ep.id] = au.currentTime; save() }
+  if (ep && au.readyState && !au.ended) { S.pos[ep.id] = au.currentTime; save() }
   ep = e; view = partOf(e); setColor(view); S.last = e.id; save();
   au.src = e.src; au.playbackRate = rates[ri];
   au.onloadedmetadata = () => {
@@ -330,16 +335,19 @@ au.onplay = au.onpause = () => {
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = au.paused ? 'paused' : 'playing';
 };
 au.onerror = () => { if (ep) alert('โหลดไฟล์เสียงไม่ได้ (' + ep.src + ')') };
-// ฟังจบ: มีคำถามท้ายตอนก็เปิดแบบทดสอบ (ถ้าแอปอยู่เบื้องหลัง รอเปิดตอนกลับมา) ไม่มีก็เล่นตอนต่อไป
-let pending = null;
+// ฟังจบ: มีคำถามท้ายตอนก็ถาม แล้วเล่นตอนต่อไปเอง (ข้าม Part ได้)
+// ถ้าแอปอยู่เบื้องหลัง เล่นตอนต่อไปเลย แล้วเก็บคำถามไว้ถามตอนกลับมา
+const pending = [];
 au.onended = () => {
-  S.pos[ep.id] = 0; S.done[ep.id] = 1; S.fin[ep.id] = 1; save(); renderHome(); renderPlayer();
-  if (quizOpen(ep)) document.hidden ? pending = ep : quiz(ep);
-  else next();
+  const e = ep;
+  S.pos[e.id] = 0; S.done[e.id] = 1; S.fin[e.id] = 1; save(); renderHome(); renderPlayer();
+  if (!quizOpen(e)) return next();
+  if (document.hidden) { pending.push(e); next() }
+  else quiz(e, 'end');
 };
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { if (ep && au.readyState) { S.pos[ep.id] = au.currentTime; save() } }
-  else if (pending) { const e = pending; pending = null; quiz(e) }
+  else if (pending.length && !$('modal').classList.contains('on')) quiz(pending.shift(), 'pending');
 });
 function media() {
   if (!('mediaSession' in navigator)) return;
@@ -356,11 +364,14 @@ function media() {
   };
   for (const k in h) try { ms.setActionHandler(k, h[k]) } catch {}
 }
-function next() { if (!ep) return; const eps = partOf(ep).episodes, n = eps[eps.indexOf(ep) + 1]; if (n) load(n, true) }
+const after = e => allEps[allEps.indexOf(e) + 1];
+function next() { const n = ep && after(ep); n ? load(n, true) : renderHome() }
 // แบบทดสอบท้ายตอน: ไล่ข้อที่ยังไม่ตอบ จบแล้วสรุปคะแนน
-let qe = null;
-function quiz(e) {
-  qe = e; au.pause(); $('npClose').click();
+// mode: 'end' = ฟังจบตอนนี้ → จบแล้วเล่นตอนต่อไป, 'pending' = ถามย้อนหลัง → จบแล้วเล่นตอนเดิมต่อ, 'manual' = กดเปิดเอง
+let qe = null, qmode = 'manual', wasPlaying = false, timer = 0;
+function quiz(e, mode = 'manual') {
+  clearInterval(timer);
+  qe = e; qmode = mode; wasPlaying = !au.paused; au.pause(); $('npClose').click();
   const i = e.questions.findIndex((q, k) => !(qk(e, k) in S.ans));
   i < 0 ? result() : ask(i);
   $('modal').classList.add('on');
@@ -393,19 +404,28 @@ function ask(i) {
   });
 }
 function result() {
-  const n = qe.questions.length, ok = correct(qe), eps = partOf(qe).episodes, nx = eps[eps.indexOf(qe) + 1];
+  const n = qe.questions.length, ok = correct(qe), nx = after(qe);
   $('qTag').textContent = `${partOf(qe).name} ${qe.name} · สรุปผล`; dots(-1); $('opts').style.display = 'none'; $('fb').textContent = '';
   $('qText').innerHTML = `<div class="result"><div class="big">${ok}<small>/${n}</small></div><p>${ok === n ? 'เต็ม! สุดยอดไปเลย 🏆' : ok >= n / 2 ? 'เก่งมาก ไปต่อกันเลย 💪' : 'ลองฟังทวนอีกรอบนะ 🙏'}</p></div>`;
-  $('go').textContent = nx ? `ฟัง ${nx.name} ต่อ ▶` : 'เสร็จสิ้น';
-  $('go').style.display = $('close').style.display = 'block'; $('close').style.display = nx ? 'block' : 'none';
-  qe.next = nx;
+  $('go').style.display = $('close').style.display = 'block';
+  // เล่นต่ออัตโนมัติใน 3 วินาที
+  const cont = qmode === 'end' ? nx : qmode === 'pending' || wasPlaying ? ep : null;
+  if (!cont) { $('go').textContent = 'เสร็จสิ้น'; $('close').style.display = 'none'; return }
+  const label = cont === ep && qmode !== 'end' ? 'ฟังต่อ' : `ฟัง ${partOf(cont).name} ${cont.name}`;
+  let k = 3;
+  const t = () => { $('go').textContent = `${label} ▶ (${k})` };
+  t(); clearInterval(timer);
+  timer = setInterval(() => { if (--k <= 0) $('go').click(); else t() }, 1000);
 }
-const closeQuiz = () => { $('modal').classList.remove('on'); $('opts').style.display = '' };
+const closeQuiz = () => { clearInterval(timer); $('modal').classList.remove('on'); $('opts').style.display = '' };
 $('go').onclick = () => {
   const i = qe.questions.findIndex((q, k) => !(qk(qe, k) in S.ans));
   if (i >= 0) return ask(i);
   if ($('opts').style.display !== 'none') return result();
-  closeQuiz(); if (qe.next) load(qe.next, true);
+  closeQuiz();
+  if (pending.length) return quiz(pending.shift(), 'pending');
+  if (qmode === 'end') next();
+  else if (qmode === 'pending' || wasPlaying) au.play().catch(() => {});
 };
 $('close').onclick = closeQuiz;
 
