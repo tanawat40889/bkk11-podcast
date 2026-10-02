@@ -891,41 +891,48 @@ let cardBlob = null, cardUrl = '', cardT = 0;
 function drawCard(p) {
   const W = 1080, H = 1350, c = document.createElement('canvas'), x = c.getContext('2d'), l = LV[p.lv];
   c.width = W; c.height = H;
-  const F = (w, px) => `${w} ${px}px Prompt, sans-serif`;
+  const EMO = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
   const rr = (X, Y, w, h, r) => { x.beginPath(); x.roundRect ? x.roundRect(X, Y, w, h, r) : x.rect(X, Y, w, h); };
+  // ข้อความ: ใช้ฟอนต์ Prompt, ย่อขนาดเองถ้ายาวเกินกรอบ
+  const T = (text, cx, y, weight, px, color, max = 960) => {
+    do { x.font = `${weight} ${px}px Prompt, ${EMO}` } while (x.measureText(text).width > max && (px -= 2) > 22);
+    x.fillStyle = color; x.fillText(text, cx, y);
+  };
   let g = x.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, '#5b3fd6'); g.addColorStop(.55, '#1c1436'); g.addColorStop(1, '#0d0d0d');
   x.fillStyle = g; x.fillRect(0, 0, W, H);
-  g = x.createRadialGradient(W / 2, 360, 0, W / 2, 360, 460);
-  g.addColorStop(0, 'rgba(255,209,102,.32)'); g.addColorStop(1, 'rgba(255,209,102,0)');
+  g = x.createRadialGradient(W / 2, 380, 0, W / 2, 380, 480);
+  g.addColorStop(0, 'rgba(255,209,102,.34)'); g.addColorStop(1, 'rgba(255,209,102,0)');
   x.fillStyle = g; x.fillRect(0, 0, W, H);
   x.textAlign = 'center'; x.textBaseline = 'alphabetic';
-  x.fillStyle = 'rgba(255,255,255,.8)'; x.font = F(700, 40); x.fillText('🎧 BKK11 Podcast · ติวธรรมะ', W / 2, 100);
-  if (S.name) { x.fillStyle = '#fff'; x.font = F(600, 50); x.fillText(S.name, W / 2, 180) }
-  x.font = '220px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; x.fillStyle = '#fff'; x.fillText(l[2], W / 2, 450);
-  x.font = F(800, 96); x.fillText(l[1], W / 2, 580);
-  x.fillStyle = '#ffd166'; x.font = F(800, 72); x.fillText(`⭐ ${p.stars} / ${p.total} ดาว`, W / 2, 680);
-  x.fillStyle = 'rgba(255,255,255,.15)'; rr(140, 716, 800, 24, 12); x.fill();
-  if (p.stars) { g = x.createLinearGradient(140, 0, 940, 0); g.addColorStop(0, '#ffd166'); g.addColorStop(1, '#ff9f43'); x.fillStyle = g; rr(140, 716, Math.max(24, 800 * p.stars / p.total), 24, 12); x.fill() }
-  [['🎧 ฟังจบ', `${p.fin}/${allEps.length} ตอน`], ['❓ ท้ายตอนถูก', `${p.quiz}/${p.quizTot} ข้อ`], ['📝 แนวข้อสอบ', `${S.xbest}/${XQ.length} ข้อ`], ['🔥 ติวต่อเนื่อง', `${p.st.n || 0} วัน`]].forEach((t, i) => {
-    const X = 140 + (i % 2) * 415, Y = 790 + Math.floor(i / 2) * 150;
-    x.fillStyle = 'rgba(255,255,255,.08)'; rr(X, Y, 385, 126, 20); x.fill();
-    x.fillStyle = 'rgba(255,255,255,.7)'; x.font = F(400, 30); x.fillText(t[0], X + 192, Y + 48);
-    x.fillStyle = '#fff'; x.font = F(800, 46); x.fillText(t[1], X + 192, Y + 102);
+  T('BKK11 Podcast · ติวธรรมะ', W / 2, 112, 700, 50, 'rgba(255,255,255,.85)');
+  if (S.name) T(S.name, W / 2, 206, 800, 70, '#fff', 900);
+  x.font = `250px ${EMO}`; x.fillStyle = '#fff'; x.fillText(l[2], W / 2, 490);
+  T(l[1], W / 2, 640, 800, 124, '#fff');
+  T(`⭐ ${p.stars} / ${p.total} ดาว`, W / 2, 752, 800, 92, '#ffd166');
+  x.fillStyle = 'rgba(255,255,255,.16)'; rr(120, 790, 840, 30, 15); x.fill();
+  if (p.stars) { g = x.createLinearGradient(120, 0, 960, 0); g.addColorStop(0, '#ffd166'); g.addColorStop(1, '#ff9f43'); x.fillStyle = g; rr(120, 790, Math.max(30, 840 * p.stars / p.total), 30, 15); x.fill() }
+  [['ฟังจบ', `${p.fin}/${allEps.length} ตอน`], ['ท้ายตอนถูก', `${p.quiz}/${p.quizTot} ข้อ`], ['แนวข้อสอบ', `${S.xbest}/${XQ.length} ข้อ`], ['ติวต่อเนื่อง', `${p.st.n || 0} วัน`]].forEach((t, i) => {
+    const X = 120 + (i % 2) * 430, Y = 860 + Math.floor(i / 2) * 156;
+    x.fillStyle = 'rgba(255,255,255,.09)'; rr(X, Y, 410, 136, 24); x.fill();
+    T(t[0], X + 205, Y + 52, 500, 36, 'rgba(255,255,255,.75)', 380);
+    T(t[1], X + 205, Y + 112, 800, 56, '#fff', 380);
   });
-  x.fillStyle = 'rgba(255,255,255,.7)'; x.font = F(600, 32); x.fillText(`เหรียญรางวัล ${p.badges.filter(b => b[2]).length} / ${p.badges.length}`, W / 2, 1130);
+  const n = p.badges.length, gap = 84;
   p.badges.forEach((b, i) => {
-    const cx = (W - (p.badges.length - 1) * 76) / 2 + i * 76, cy = 1190;
+    const cx = (W - (n - 1) * gap) / 2 + i * gap, cy = 1220;
     x.globalAlpha = b[2] ? 1 : .22;
-    x.fillStyle = b[2] ? 'rgba(255,209,102,.25)' : 'rgba(255,255,255,.12)'; x.beginPath(); x.arc(cx, cy, 34, 0, 7); x.fill();
-    x.font = '36px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; x.fillStyle = '#fff'; x.fillText(b[0], cx, cy + 13);
+    x.fillStyle = b[2] ? 'rgba(255,209,102,.28)' : 'rgba(255,255,255,.12)'; x.beginPath(); x.arc(cx, cy, 38, 0, 7); x.fill();
+    x.font = `42px ${EMO}`; x.fillStyle = '#fff'; x.fillText(b[0], cx, cy + 15);
     x.globalAlpha = 1;
   });
-  x.fillStyle = '#fff'; x.font = F(600, 34); x.fillText('มาติวด้วยกัน 👉 tanawat40889.github.io/bkk11-podcast', W / 2, 1300);
+  T('มาติวด้วยกัน 👉 tanawat40889.github.io/bkk11-podcast', W / 2, 1312, 700, 40, '#fff', 980);
   return c;
 }
 async function buildCard() {
-  try { await Promise.all([400, 600, 700, 800].map(w => document.fonts.load(`${w} 40px Prompt`, 'ติวธรรมะ'))) } catch {}
+  // โหลดฟอนต์ Prompt ให้ครบทั้งไทย/อังกฤษ/ตัวเลขทุกน้ำหนักก่อนวาด (ไม่งั้นมือถือจะใช้ฟอนต์เครื่องแทน ทำให้ตัวหนังสือไม่สวย)
+  const sample = 'ติวธรรมะ ผู้เริ่มต้นนักฟังยุวชนพร้อมสอบตำนาน ดาว ข้อ ตอน วัน ' + (S.name || '') + ' BKK11 Podcast abc.io/-· 0123456789';
+  try { await Promise.all([500, 700, 800].map(w => document.fonts.load(`${w} 40px Prompt`, sample))); await document.fonts.ready } catch {}
   const c = drawCard(prog());
   cardBlob = await new Promise(r => c.toBlob(r, 'image/png'));
   if (cardUrl) URL.revokeObjectURL(cardUrl);
