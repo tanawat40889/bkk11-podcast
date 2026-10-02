@@ -161,6 +161,12 @@ h1{margin:0 0 6px;font-size:clamp(24px,6.5vw,34px);font-weight:800;letter-spacin
 .result .big{font-size:56px;font-weight:800;line-height:1.1}.result .big small{font-size:24px;color:var(--mute)}
 .result p{color:var(--mute);margin:6px 0 0}
 button.badge{cursor:pointer}
+.qbtn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:8px 16px;border-radius:999px;background:var(--acc);color:#000;font-size:14px;font-weight:700;white-space:nowrap;transition:transform .1s}
+.qbtn:hover{transform:scale(1.04)}.qbtn:active{transform:scale(.96)}
+.qbtn.warn{background:#ffd166}
+.qbtn.done{background:none;color:var(--acc);border:1.5px solid var(--acc);padding:6.5px 14px}
+#retry{background:#ffd166;color:#000;border:0}
+.qpill,.mini .qb{cursor:pointer}
 .badge.todo{background:var(--acc);color:#000}
 .qdots.many{gap:2px}
 .info{margin:16px;padding:18px;border-radius:12px;background:var(--s1);border:1px solid var(--s2);text-align:left}
@@ -472,11 +478,12 @@ function renderList() {
       <div class="n">${cur ? `<div class="eq${au.paused ? ' stop' : ''}"><i></i><i></i><i></i></div>` : i + 1}</div>
       <div style="min-width:0"><div class="t">${e.title || e.name}</div>
         <div class="s"><span>${e.name}</span>${pos > 1 && !done ? `<span class="prog"><i style="width:${Math.min(100, pos / d * 100)}%"></i></span>` : ''}<span>${left}</span>
-        ${!nq ? '' : na === nq ? `<button class="badge ok" data-q="${i}">🏆 ${correct(e)}/${nq} ข้อ</button>`
-          : S.fin[e.id] ? `<button class="badge todo" data-q="${i}">📝 ทำแบบทดสอบ</button>` : `<span class="badge">📝 ${nq} ข้อท้ายตอน</span>`}</div></div>
+        </div>${!nq ? '' : na < nq ? `<button class="qbtn" data-q="${i}">📝 ${na ? 'ทำ Quiz ต่อ' : 'ทำ Quiz'} · ${nq} ข้อ</button>`
+          : correct(e) < nq ? `<button class="qbtn warn" data-q="${i}">🏆 ${correct(e)}/${nq} · 🔁 แก้ตัว</button>`
+          : `<button class="qbtn done" data-q="${i}">🏆 ${nq}/${nq} เต็ม!</button>`}</div>
       <div class="pp">${cur && !au.paused ? I.pause : I.play}</div></li>`;
   }).join('');
-  L.querySelectorAll('button.badge').forEach(b => b.onclick = ev => { ev.stopPropagation(); quiz(view.episodes[b.dataset.q]) });
+  L.querySelectorAll('.qbtn').forEach(b => b.onclick = ev => { ev.stopPropagation(); quiz(view.episodes[b.dataset.q]) });
   L.querySelectorAll('.row').forEach(r => r.onclick = () => {
     const e = view.episodes[r.dataset.i];
     e === ep ? toggle() : load(e, true);
@@ -489,8 +496,8 @@ function renderPlayer() {
   $('miniCover').innerHTML = cover(p, true); $('npCover').innerHTML = cover(p);
   $('miniT').textContent = ep.title || ep.name; $('miniA').textContent = `${p.name} · ${ep.name} · BKK11 Podcast`;
   $('npT').textContent = ep.title || ep.name; $('npSub').textContent = `${p.name} · ${ep.name}`; $('npFrom').textContent = `ติวธรรมะ ${p.name}`;
-  $('npQ').textContent = !nq ? '' : na === nq ? `🏆 ${correct(ep)}/${nq}` : `📝 ${nq} ข้อท้ายตอน`; $('npQ').style.display = nq ? '' : 'none';
-  $('miniQ').textContent = quizOpen(ep) ? '📝' : '';
+  $('npQ').textContent = !nq ? '' : na === nq ? `🏆 ${correct(ep)}/${nq}` : `📝 ทำ Quiz · ${nq} ข้อ`; $('npQ').style.display = nq ? '' : 'none';
+  $('miniQ').textContent = nq && na < nq ? '📝 Quiz' : '';
   $('next').disabled = !after(ep);
   $('mini').classList.add('on'); document.body.classList.add('has-ep');
   $('mini').style.setProperty('--pc', p.color); $('np').style.setProperty('--pc', p.color);
@@ -753,6 +760,8 @@ $('bigplay').onclick = () => {
   if (e) load(e, true);
 };
 $('play').onclick = toggle;
+$('npQ').onclick = () => ep && quiz(ep);
+$('miniQ').onclick = e => { e.stopPropagation(); if (ep) quiz(ep) };
 $('miniPlay').onclick = e => { e.stopPropagation(); toggle() };
 $('mini').onclick = () => { $('np').classList.add('on'); $('np').setAttribute('aria-hidden', 'false') };
 $('npClose').onclick = () => { $('np').classList.remove('on'); $('np').setAttribute('aria-hidden', 'true') };
