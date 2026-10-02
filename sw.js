@@ -1,5 +1,5 @@
 // App shell: network-first, cache fallback offline. ไฟล์เสียงไม่ผ่าน SW (Range request + ไฟล์ใหญ่)
-const V = 'bkk11pod-v18';
+const V = 'bkk11pod-v19';
 const SHELL = ['./', 'index.html', 'data.js', 'exam.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-64.png'];
 const CDN = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
