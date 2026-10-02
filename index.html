@@ -12,6 +12,11 @@
 <link rel="icon" href="icons/favicon-64.png" />
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
 <title>BKK11 Podcast</title>
+<script>
+// เปิดจาก LINE: ให้ LINE ส่งต่อไปเบราว์เซอร์หลักของเครื่อง (LINE รองรับพารามิเตอร์ openExternalBrowser=1)
+if (/\bLine\//i.test(navigator.userAgent) && !/[?&]openExternalBrowser=1/.test(location.search))
+  location.replace(location.pathname + (location.search ? location.search + '&' : '?') + 'openExternalBrowser=1' + location.hash);
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
 :root{--bg:#121212;--s1:#181818;--s2:#282828;--s3:#3e3e3e;--text:#fff;--mute:#b3b3b3;--dim:#727272;--acc:#1ed760;--bad:#f3727f;--pc:#7c5cff;
@@ -752,6 +757,13 @@ addEventListener('keydown', e => {
   });
   $('helpOk').onclick = () => $('help').classList.remove('on');
   $('help').onclick = e => { if (e.target === $('help')) $('help').classList.remove('on') };
+}
+// ยังอยู่ใน LINE browser (ส่งต่อไม่สำเร็จ): บอกวิธีเปิดในเบราว์เซอร์เอง
+if (/\bLine\//i.test(navigator.userAgent)) {
+  $('helpSteps').innerHTML = ['แตะเมนู <b>⋮</b> หรือปุ่มแชร์ มุมขวาของหน้านี้', 'เลือก <b>เปิดในเบราว์เซอร์</b> (Open in browser)'].map(t => `<li>${t}</li>`).join('');
+  document.querySelector('#help h3').lastChild.textContent = 'เปิดในเบราว์เซอร์ของเครื่อง';
+  document.querySelector('#help p').textContent = 'เบราว์เซอร์ของ LINE เล่นเบื้องหลังและติดตั้งแอปไม่ได้ แนะนำให้เปิดใน Safari หรือ Chrome';
+  $('help').classList.add('on');
 }
 renderHome(); score(); tick();
 // เปิดแอปมา: โหลดตอนล่าสุดค้างไว้ที่ตำแหน่งเดิม (ยังไม่เล่นจนกว่าจะกด)
