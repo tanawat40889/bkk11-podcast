@@ -166,6 +166,12 @@ button.badge{cursor:pointer}
 .qbtn.warn{background:#ffd166}
 .qbtn.done{background:none;color:var(--acc);border:1.5px solid var(--acc);padding:6.5px 14px}
 #retry{background:#ffd166;color:#000;border:0}
+.redo-btn{padding:6px 14px;border-radius:999px;background:#fff;color:#000;font-size:13px;font-weight:700;white-space:nowrap}
+.redo-btn[hidden]{display:none}
+.rbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0 4px}
+.rbtns button{padding:12px 20px;border-radius:999px;font-size:16px;font-weight:700;background:#fff;color:#000}
+.rbtns .y{background:#ffd166}
+@media (max-width:899px){.bar-actions{gap:10px}}
 .qpill,.mini .qb{cursor:pointer}
 .badge.todo{background:var(--acc);color:#000}
 .qdots.many{gap:2px}
@@ -291,6 +297,7 @@ body.can-install .install{display:inline-flex}
   .hero .by{grid-area:by}.hero .meta{grid-area:meta}
   .bar-actions{grid-area:act;margin-top:28px;flex-direction:row-reverse;justify-content:flex-end;gap:24px}
   .bigplay{margin-left:0}
+  .redo-btn{order:-1}
   .list{padding:0 24px}
   .row{grid-template-columns:40px 1fr auto;gap:16px;padding:12px 16px}
   .row .pp{opacity:0;transition:opacity .15s}.row:hover .pp,.row.cur .pp{opacity:1}
@@ -348,6 +355,7 @@ body.can-install .install{display:inline-flex}
     <div class="meta" id="heroMeta"></div>
     <div class="bar-actions">
       <div class="scorebox" id="score"></div>
+      <button class="redo-btn" id="xreset" hidden>🔁 ทำใหม่</button>
       <button class="bigplay" id="bigplay" aria-label="เล่น"></button>
     </div>
   </section>
@@ -458,7 +466,7 @@ function renderHome() {
   $('lib').querySelectorAll('button').forEach(b => b.onclick = () => { view = items[b.dataset.i]; renderHome(); scrollTo(0, 0) });
   $('heroCover').innerHTML = cover(view);
   if (view === X) return renderExam();
-  $('extra').innerHTML = ''; score();
+  $('extra').innerHTML = ''; $('xreset').hidden = true; score();
   $('heroTitle').textContent = `ติวธรรมะ ${view.name}`;
   const tot = view.episodes.reduce((a, e) => a + (e.dur || 0), 0);
   $('heroMeta').textContent = view.episodes.length ? `พอดแคสต์ · ${view.episodes.length} ตอน · ${mins(tot)} · ฟังจบแล้วตอบคำถามท้ายตอน` : 'เร็ว ๆ นี้';
@@ -672,8 +680,9 @@ function renderExam() {
   $('score').innerHTML = na ? `🏆 คะแนน <b>${xOk()}</b> / ${n}${na < n ? ` · ทำแล้ว ${na}` : ''}` : `📝 ยังไม่ได้เริ่มทำ`;
   $('bigplay').disabled = false; $('bigplay').innerHTML = I.play;
   renderExamList();
-  $('extra').innerHTML = examInfo() + (na ? '<button class="textbtn" id="xreset">📝 ทำข้อสอบใหม่ทั้งหมด</button>' : '');
-  if (na) $('xreset').onclick = () => { if (confirm('ล้างคำตอบแล้วเริ่มทำข้อสอบใหม่ทั้ง 40 ข้อ? (ดาวที่ได้แล้วไม่หาย)')) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); renderHome() } };
+  $('extra').innerHTML = examInfo();
+  $('xreset').hidden = !na;
+  $('xreset').onclick = () => { if (confirm('ล้างคำตอบแล้วเริ่มทำข้อสอบใหม่ทั้ง 40 ข้อ? (ดาวที่ได้แล้วไม่หาย)')) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); renderHome() } };
 }
 function renderExamList() {
   let start = 0;
@@ -740,16 +749,16 @@ function examResult() {
     : pct >= 50 ? 'ผ่านครึ่งแล้ว ลองฟังพอดแคสต์ทวนอีกรอบนะ 🎧' : 'ไม่เป็นไรนะ ค่อย ๆ ฟังทวนทีละตอน แล้วกลับมาลองใหม่ 🙏';
   const wrong = XQ.map((q, i) => ({ q, i })).filter(x => S.exam.ans[x.i] !== x.q.a);
   $('qTag').textContent = `${X.name} · สรุปคะแนน`; xDots(-1); $('opts').style.display = 'none'; $('fb').textContent = '';
-  $('qText').innerHTML = `<div class="result"><div class="big">${ok}<small>/${n}</small></div><p>${pct}% · ${msg}</p></div>
+  $('qText').innerHTML = `<div class="result"><div class="big">${ok}<small>/${n}</small></div><p>${pct}% · ${msg}</p>
+      <div class="rbtns">${wrong.length ? `<button class="y" id="xr1">🔁 แก้ตัวข้อที่ผิด (${wrong.length})</button>` : ''}<button id="xr2">📝 ทำข้อสอบใหม่ทั้งหมด</button></div></div>
     <div class="sets">${X.sets.map((s, si) => { const m = s.questions.length, k = xOk(si); return `<div><span>${s.name}</span><b>${k}/${m}</b><span class="bar"><i style="width:${k / m * 100}%"></i></span></div>` }).join('')}</div>
     ${examInfo()}
     ${wrong.length ? `<div class="wrong"><h4>ทวนข้อที่ผิด (${wrong.length} ข้อ)</h4>${wrong.map(({ q, i }) => `<div><b>${i + 1}. ${q.q}</b><s>${q.choices[S.exam.ans[i]]}</s><span>✓ ${q.choices[q.a]}${q.explain ? ` — ${q.explain}` : ''}</span></div>`).join('')}</div>` : ''}`;
   $('qText').style.fontSize = '';
   $('go').textContent = 'เสร็จสิ้น'; $('go').style.display = 'block'; $('close').style.display = 'none';
-  $('retry').style.display = wrong.length ? 'block' : 'none'; $('retry').textContent = `🔁 แก้ตัวเฉพาะข้อที่ผิด (${wrong.length} ข้อ)`;
-  $('retry').onclick = () => { wrong.forEach(x => delete S.exam.ans[x.i]); save(); examAsk(wrong[0].i) };
-  $('redo').style.display = 'block'; $('redo').textContent = '📝 ทำข้อสอบใหม่ทั้งหมด';
-  $('redo').onclick = () => { if (confirm('ล้างคำตอบแล้วเริ่มทำข้อสอบใหม่ทั้ง 40 ข้อ? (ดาวที่ได้แล้วไม่หาย)')) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); examAsk(0) } };
+  $('retry').style.display = $('redo').style.display = 'none';
+  if (wrong.length) $('xr1').onclick = () => { wrong.forEach(x => delete S.exam.ans[x.i]); save(); examAsk(wrong[0].i) };
+  $('xr2').onclick = () => { if (confirm('ล้างคำตอบแล้วเริ่มทำข้อสอบใหม่ทั้ง 40 ข้อ? (ดาวที่ได้แล้วไม่หาย)')) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); examAsk(0) } };
   toTop();
 }
 
