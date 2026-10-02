@@ -218,7 +218,32 @@ button.badge{cursor:pointer}
 .install .ic{width:16px;height:16px}
 body.can-install .install{display:inline-flex}
 .hero>.install{position:absolute;top:calc(12px + var(--st));right:16px;z-index:1}
-@media (max-width:899px){body.can-install .hero{padding-top:calc(60px + var(--st))}}
+@media (max-width:899px){.hero{padding-top:calc(60px + var(--st))}}
+
+/* ---------- ดาว / ระดับ / เหรียญ ---------- */
+.stars{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#0006;font-size:13px;font-weight:700;white-space:nowrap}
+.stars b{color:#ffd166}
+.hero>.stars{position:absolute;top:calc(12px + var(--st));left:16px;z-index:1}
+.help>div{max-height:92dvh;overflow-y:auto}
+.rw-top{text-align:center}
+.rw-top .em{font-size:52px;line-height:1.1}
+.rw-top h3{justify-content:center;margin:6px 0 2px;font-size:22px}
+.rw-top .n{font-size:17px;font-weight:700;color:#ffd166}
+.rw-bar{height:8px;border-radius:4px;background:var(--s3);overflow:hidden;margin-top:10px}
+.rw-bar i{display:block;height:100%;background:linear-gradient(90deg,#ffd166,#ff9f43);border-radius:4px;transition:width .5s}
+.rw-top small{display:block;color:var(--mute);margin-top:6px;font-size:13px}
+.rw-rows{display:flex;flex-direction:column;gap:8px;font-size:15px}
+.rw-rows div{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:8px;background:#1f1f1f}
+.rw-rows b{color:#ffd166;white-space:nowrap}
+.rw-bd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rw-bd div{text-align:center;font-size:11px;line-height:1.3;color:var(--mute);padding:10px 4px;border-radius:10px;background:#1f1f1f;opacity:.38;filter:grayscale(1)}
+.rw-bd div.got{opacity:1;filter:none;color:var(--text);background:#2e2a1a}
+.rw-bd span{display:block;font-size:26px;margin-bottom:4px}
+.help h4{margin:4px 0 -4px;font-size:14px;color:var(--mute);font-weight:600}
+.help button.ghost{background:none;color:var(--mute);border:1px solid var(--s3)}
+.toast{position:fixed;left:50%;top:calc(16px + var(--st));transform:translate(-50%,-140%);z-index:20;padding:12px 20px;border-radius:999px;
+  background:#ffd166;color:#000;font-weight:700;font-size:15px;white-space:nowrap;box-shadow:0 8px 24px #0008;transition:transform .35s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.toast.on{transform:translate(-50%,0)}
 .help{position:fixed;inset:0;z-index:12;background:#000b;display:none;align-items:flex-end;justify-content:center}
 .help.on{display:flex}
 .help>div{width:100%;max-width:480px;background:var(--s2);border-radius:16px 16px 0 0;padding:22px 22px calc(22px + var(--sb));display:flex;flex-direction:column;gap:14px}
@@ -266,7 +291,8 @@ body.can-install .install{display:inline-flex}
   .textbtn{margin:0 40px}
   .foot{text-align:left;padding:28px 40px}
   .dock{display:none}
-  .hero>.install{display:none!important}
+  .hero>.install,.hero>.stars{display:none!important}
+  .side .stars{width:100%;justify-content:space-between;background:none;padding:0;font-size:15px}
   /* แถบเล่น: ใช้ .np เดิม จัดเป็นแถวเดียว */
   .np{display:none;inset:auto 0 0 0;height:90px;transform:none!important;padding:0 16px;background:#000;overflow:visible}
   body.has-ep .np{display:block}
@@ -303,10 +329,11 @@ body.can-install .install{display:inline-flex}
 <aside class="side">
   <div class="brand"><img src="icons/icon-192.png" alt="" /><span style="flex:1">BKK11 Podcast</span><button class="install"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v9.6l3.3-3.3a1 1 0 1 1 1.4 1.4L12 17.4l-5.7-5.7a1 1 0 1 1 1.4-1.4l3.3 3.3V4a1 1 0 0 1 1-1zM5 19a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1z"/></svg>ติดตั้งแอป</button></div>
   <div class="lib"><h5>คลังติวธรรมะ</h5><div id="lib"></div></div>
-  <div><div class="scorebox" id="score2"></div></div>
+  <div style="display:flex;flex-direction:column;gap:10px"><button class="stars"></button><div class="rw-bar"><i id="sideBar"></i></div><div class="scorebox" id="score2"></div></div>
 </aside>
 <main class="home">
   <section class="hero">
+    <button class="stars"></button>
     <button class="install"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v9.6l3.3-3.3a1 1 0 1 1 1.4 1.4L12 17.4l-5.7-5.7a1 1 0 1 1 1.4-1.4l3.3 3.3V4a1 1 0 0 1 1-1zM5 19a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1z"/></svg>ติดตั้งแอป</button>
     <div id="heroCover"></div>
     <h1 id="heroTitle"></h1>
@@ -365,6 +392,8 @@ body.can-install .install{display:inline-flex}
   <button class="go ghost" id="close">ปิด</button>
 </div></div>
 
+<div class="toast" id="toast"></div>
+<div class="help" id="rw"><div id="rwBody"></div></div>
 <div class="help" id="help"><div>
   <h3><img src="icons/icon-192.png" alt="" />ติดตั้ง BKK11 Podcast</h3>
   <ol id="helpSteps"></ol>
@@ -384,7 +413,9 @@ const I = {
 };
 let S; try { S = JSON.parse(localStorage.getItem(KEY)) || {} } catch { S = {} }
 S.ans ??= {}; S.pos ??= {}; S.done ??= {}; S.fin ??= {}; S.exam ??= { ans: {}, seed: Date.now() % 1e9 };
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch {} };
+const store = () => { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch {} };
+let ready = false;
+const save = () => { store(); if (ready) checkStars() };
 const fmt = s => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') };
 const mins = s => Math.max(1, Math.round(s / 60)) + ' นาที';
 const allEps = P.parts.flatMap(p => p.episodes);
@@ -397,7 +428,7 @@ const qk = (e, i) => e.id + ':' + i;
 const answered = e => e.questions.filter((q, i) => qk(e, i) in S.ans).length;
 const correct = e => e.questions.filter((q, i) => S.ans[qk(e, i)] === q.a).length;
 const quizOpen = e => S.fin[e.id] && answered(e) < e.questions.length;
-const posOf = e => e === ep ? au.currentTime : (S.pos[e.id] || 0);
+const posOf = e => e === ep ? (au.ended ? 0 : au.currentTime) : (S.pos[e.id] || 0);
 
 function score() {
   let ok = 0, tot = 0;
@@ -497,6 +528,7 @@ au.ontimeupdate = () => {
   }
 };
 au.onplay = au.onpause = () => {
+  if (!au.paused) touchDay();
   if (ep && au.readyState) { S.pos[ep.id] = au.currentTime; save() }
   tick(); renderHome();
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = au.paused ? 'paused' : 'playing';
@@ -558,7 +590,7 @@ function ask(i) {
     const b = document.createElement('button');
     b.className = 'opt'; b.innerHTML = `<span class="k">${'กขคง'[k] || k + 1}</span><span></span>`; b.lastChild.textContent = c;
     b.onclick = () => {
-      S.ans[qk(qe, i)] = k; save(); dots(-1);
+      S.ans[qk(qe, i)] = k; save(); touchDay(); dots(-1);
       [...box.children].forEach((x, j) => { x.disabled = true; if (j === q.a) x.classList.add('ok') });
       if (k !== q.a) b.classList.add('bad');
       $('fb').textContent = k === q.a ? '🎉 ถูกต้อง!' : '😅 ยังไม่ถูก' + (q.explain ? ' — ' + q.explain : '');
@@ -666,7 +698,7 @@ function examAsk(i) {
     const b = document.createElement('button');
     b.className = 'opt'; b.innerHTML = `<span class="k">${'กขคง'[pos] || pos + 1}</span><span></span>`; b.lastChild.textContent = q.choices[k]; b.dataset.k = k;
     b.onclick = () => {
-      S.exam.ans[i] = k; save(); xDots(-1);
+      S.exam.ans[i] = k; save(); touchDay(); xDots(-1);
       [...box.children].forEach(x => { x.disabled = true; if (+x.dataset.k === q.a) x.classList.add('ok') });
       if (k !== q.a) b.classList.add('bad');
       $('fb').textContent = (k === q.a ? '🎉 ถูกต้อง!' : '😅 ยังไม่ถูก') + (q.explain ? ' — ' + q.explain : '');
@@ -726,7 +758,7 @@ $('rate').onclick = () => { ri = (ri + 1) % rates.length; au.playbackRate = rate
 })();
 $('reset').onclick = () => {
   if (!confirm('ล้างคะแนนและตำแหน่งที่ฟังทั้งหมด?')) return;
-  S = { ans: {}, pos: {}, done: {}, fin: {}, exam: { ans: {}, seed: Date.now() % 1e9 } }; save(); score();
+  S = { ans: {}, pos: {}, done: {}, fin: {}, exam: { ans: {}, seed: Date.now() % 1e9 } }; lastStars = 0; lastLv = 0; save(); score();
   if (ep) { seek(0); renderPlayer() }
   renderHome();
 };
@@ -765,7 +797,77 @@ if (/\bLine\//i.test(navigator.userAgent)) {
   document.querySelector('#help p').textContent = 'เบราว์เซอร์ของ LINE เล่นเบื้องหลังและติดตั้งแอปไม่ได้ แนะนำให้เปิดใน Safari หรือ Chrome';
   $('help').classList.add('on');
 }
+// ---------- ดาว / ระดับ / เหรียญ / วันต่อเนื่อง ----------
+// ดาว: ฟังจบ 1 ตอน = 1, ตอบคำถามท้ายตอนถูก 1 ข้อ = 1, แนวข้อสอบ = คะแนนสูงสุดที่เคยทำได้
+const LV = [[0, 'ผู้เริ่มต้น', '🌱'], [.12, 'นักฟัง', '🎧'], [.3, 'นักเรียนธรรม', '📖'], [.5, 'ยุวชนตัวจริง', '💪'], [.72, 'พร้อมสอบ', '🎯'], [.9, 'ยอดยุวชน', '🏆'], [1, 'ตำนาน BKK11', '👑']];
+const SHARE_URL = 'https://tanawat40889.github.io/bkk11-podcast/?openExternalBrowser=1';
+function prog() {
+  const fin = allEps.filter(e => S.fin[e.id]).length, quiz = allEps.reduce((a, e) => a + correct(e), 0), quizTot = allEps.reduce((a, e) => a + e.questions.length, 0);
+  S.xbest = Math.max(S.xbest || 0, xOk()); if (xAns() === XQ.length) S.xdone = 1;
+  const stars = fin + quiz + S.xbest, total = allEps.length + quizTot + XQ.length;
+  let lv = 0; LV.forEach((l, i) => { if (stars >= Math.ceil(l[0] * total)) lv = i });
+  const nextAt = lv < LV.length - 1 ? Math.ceil(LV[lv + 1][0] * total) : total, curAt = Math.ceil(LV[lv][0] * total);
+  const st = S.streak || { n: 0, best: 0 };
+  const badges = [
+    ...P.parts.map(p => [`🎧`, `ฟังจบ ${p.name}`, p.episodes.length && p.episodes.every(e => S.fin[e.id])]),
+    ['🎯', 'ตอบถูกทั้งตอน', allEps.some(e => e.questions.length && correct(e) === e.questions.length)],
+    ['🧠', 'ท้ายตอนเต็มทุกข้อ', quizTot > 0 && quiz === quizTot],
+    ['📝', 'ทำข้อสอบครบ', !!S.xdone],
+    ['🏅', 'ข้อสอบ 80%+', S.xbest >= XQ.length * .8],
+    ['💯', 'ข้อสอบเต็ม', S.xbest === XQ.length],
+    ['🔥', '3 วันติด', st.best >= 3],
+    ['⚡', '7 วันติด', st.best >= 7],
+    ['👑', 'เก็บดาวครบ', stars === total]
+  ];
+  return { fin, quiz, quizTot, stars, total, lv, nextAt, curAt, st, badges };
+}
+const today = (d = new Date()) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+function touchDay() {
+  const t = today(), st = S.streak ||= { d: '', n: 0, best: 0 };
+  if (st.d === t) return;
+  st.n = st.d === today(new Date(Date.now() - 864e5)) ? st.n + 1 : 1;
+  st.d = t; st.best = Math.max(st.best, st.n); save();
+  if (st.n > 1) toast(`🔥 เข้ามาติว ${st.n} วันติดแล้ว!`);
+}
+let lastStars = 0, lastLv = 0, toastT = 0;
+function toast(msg) {
+  $('toast').textContent = msg; $('toast').classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.remove('on'), 2600);
+}
+function checkStars() {
+  const p = prog(); store();
+  document.querySelectorAll('.stars').forEach(b => b.innerHTML = `<span>⭐ <b>${p.stars}</b> / ${p.total}</span><span>${LV[p.lv][2]} ${LV[p.lv][1]}</span>`);
+  $('sideBar').style.width = p.stars / p.total * 100 + '%';
+  if (p.lv > lastLv) toast(`🎉 เลื่อนระดับเป็น ${LV[p.lv][2]} ${LV[p.lv][1]}!`);
+  else if (p.stars > lastStars) toast(`+${p.stars - lastStars} ⭐ ได้ดาวเพิ่ม! (${p.stars}/${p.total})`);
+  lastStars = p.stars; lastLv = p.lv;
+  if ($('rw').classList.contains('on')) renderRewards();
+}
+function renderRewards() {
+  const p = prog(), l = LV[p.lv], nx = LV[p.lv + 1];
+  $('rwBody').innerHTML = `<div class="rw-top"><div class="em">${l[2]}</div><h3>${l[1]}</h3><div class="n">⭐ ${p.stars} / ${p.total} ดาว</div>
+      <div class="rw-bar"><i style="width:${nx ? (p.stars - p.curAt) / (p.nextAt - p.curAt) * 100 : 100}%"></i></div>
+      <small>${nx ? `อีก ${p.nextAt - p.stars} ดาว เลื่อนเป็น ${nx[2]} ${nx[1]}` : 'เก็บดาวครบทุกดวงแล้ว สุดยอด!'}</small></div>
+    <h4>เก็บดาวจากไหนได้บ้าง</h4>
+    <div class="rw-rows"><div><span>🎧 ฟังพอดแคสต์จนจบตอน</span><b>${p.fin} / ${allEps.length}</b></div>
+      <div><span>❓ ตอบคำถามท้ายตอนถูก</span><b>${p.quiz} / ${p.quizTot}</b></div>
+      <div><span>📝 แนวข้อสอบ (คะแนนสูงสุด)</span><b>${S.xbest} / ${XQ.length}</b></div>
+      <div><span>🔥 เข้ามาติวต่อเนื่อง</span><b>${p.st.n || 0} วัน</b></div></div>
+    <h4>เหรียญรางวัล ${p.badges.filter(b => b[2]).length} / ${p.badges.length}</h4>
+    <div class="rw-bd">${p.badges.map(b => `<div class="${b[2] ? 'got' : ''}"><span>${b[0]}</span>${b[1]}</div>`).join('')}</div>
+    <button id="rwShare">📣 แชร์ชวนเพื่อนมาติว</button><button class="ghost" id="rwClose">ปิด</button>`;
+  $('rwClose').onclick = () => $('rw').classList.remove('on');
+  $('rwShare').onclick = async () => {
+    const text = `ฉันเก็บได้ ⭐ ${p.stars}/${p.total} ดาว ระดับ "${l[1]}" ${l[2]} ใน BKK11 Podcast ติวธรรมะ 🎧 มาติวด้วยกันนะ!`;
+    try { if (navigator.share) return await navigator.share({ text, url: SHARE_URL }) } catch { return }
+    try { await navigator.clipboard.writeText(`${text}\n${SHARE_URL}`); toast('คัดลอกข้อความแล้ว เอาไปวางใน LINE ได้เลย') } catch { prompt('คัดลอกข้อความนี้ไปแชร์', `${text}\n${SHARE_URL}`) }
+  };
+}
+document.querySelectorAll('.stars').forEach(b => b.onclick = () => { renderRewards(); $('rw').classList.add('on') });
+$('rw').onclick = e => { if (e.target === $('rw')) $('rw').classList.remove('on') };
+
 renderHome(); score(); tick();
+{ const p = prog(); lastStars = p.stars; lastLv = p.lv; checkStars(); ready = true }
 // เปิดแอปมา: โหลดตอนล่าสุดค้างไว้ที่ตำแหน่งเดิม (ยังไม่เล่นจนกว่าจะกด)
 { const last = allEps.find(e => e.id === S.last); if (last) load(last, false) }
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
