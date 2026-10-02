@@ -888,15 +888,20 @@ function checkStars() {
 }
 // ---------- การ์ดรูปภาพสำหรับแชร์ (วาดด้วย canvas แล้วแชร์เป็นไฟล์รูป) ----------
 let cardBlob = null, cardUrl = '', cardT = 0;
+const MS = document.createElement('span'); MS.style.cssText = 'position:absolute;left:-9999px;top:0;white-space:pre;visibility:hidden;pointer-events:none'; document.body.append(MS);
 function drawCard(p) {
   const W = 1080, H = 1350, c = document.createElement('canvas'), x = c.getContext('2d'), l = LV[p.lv];
   c.width = W; c.height = H;
   const EMO = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
   const rr = (X, Y, w, h, r) => { x.beginPath(); x.roundRect ? x.roundRect(X, Y, w, h, r) : x.rect(X, Y, w, h); };
   // ข้อความ: ใช้ฟอนต์ Prompt, ย่อขนาดเองถ้ายาวเกินกรอบ
+  // Safari คำนวณความกว้างของเว็บฟอนต์ใน canvas ผิด (textAlign center เพี้ยน) จึงวัดความกว้างจาก DOM แล้วจัดกึ่งกลางเอง
+  const meas = (text, weight, px) => { MS.style.font = `${weight} ${px}px Prompt, ${EMO}`; MS.textContent = text; return MS.getBoundingClientRect().width };
   const T = (text, cx, y, weight, px, color, max = 960) => {
-    do { x.font = `${weight} ${px}px Prompt, ${EMO}` } while (x.measureText(text).width > max && (px -= 2) > 22);
-    x.fillStyle = color; x.fillText(text, cx, y);
+    let w = meas(text, weight, px);
+    while (w > max && px > 22) w = meas(text, weight, px -= 2);
+    x.font = `${weight} ${px}px Prompt, ${EMO}`; x.fillStyle = color; x.textAlign = 'left';
+    x.fillText(text, cx - w / 2, y); x.textAlign = 'center';
   };
   let g = x.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, '#5b3fd6'); g.addColorStop(.55, '#1c1436'); g.addColorStop(1, '#0d0d0d');
