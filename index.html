@@ -182,7 +182,8 @@ button.badge{cursor:pointer}
 .wrong div{padding:10px 12px;border-radius:8px;background:#1f1f1f}
 .wrong b{display:block;font-weight:500;margin-bottom:4px}
 .wrong span{color:var(--acc)}.wrong s{color:var(--bad);display:block}
-.textbtn{color:var(--mute);text-decoration:underline;font-size:13px;margin:0 auto;display:block;padding:8px}
+.textbtn{color:var(--text);font-size:15px;font-weight:600;margin:0 auto;display:block;padding:12px 22px;border:1px solid var(--s3);border-radius:999px}
+.textbtn:hover{border-color:#fff}
 
 /* ---------- กล่องคำถาม: ใหญ่ อ่านง่าย กดง่าย ---------- */
 .sheet{max-width:820px;gap:16px}
@@ -389,6 +390,8 @@ body.can-install .install{display:inline-flex}
   <div class="opts" id="opts"></div>
   <div class="fb" id="fb"></div>
   <button class="go" id="go">ข้อต่อไป</button>
+  <button class="go ghost" id="retry"></button>
+  <button class="go ghost" id="redo"></button>
   <button class="go ghost" id="close">ปิด</button>
 </div></div>
 
@@ -584,7 +587,7 @@ function dots(cur) {
 function ask(i) {
   const q = qe.questions[i], n = qe.questions.length;
   $('qTag').textContent = `คำถามท้ายตอน · ข้อ ${i + 1}/${n}`; dots(i);
-  $('qText').textContent = q.q; $('fb').textContent = ''; $('go').style.display = $('close').style.display = 'none';
+  $('qText').textContent = q.q; $('fb').textContent = ''; $('go').style.display = $('close').style.display = $('retry').style.display = $('redo').style.display = 'none';
   const box = $('opts'); box.innerHTML = ''; box.style.display = '';
   q.choices.forEach((c, k) => {
     const b = document.createElement('button');
@@ -607,16 +610,21 @@ function result() {
   $('qTag').textContent = `${partOf(qe).name} ${qe.name} · สรุปผล`; dots(-1); $('opts').style.display = 'none'; $('fb').textContent = '';
   $('qText').innerHTML = `<div class="result"><div class="big">${ok}<small>/${n}</small></div><p>${ok === n ? 'เต็ม! สุดยอดไปเลย 🏆' : ok >= n / 2 ? 'เก่งมาก ไปต่อกันเลย 💪' : 'ลองฟังทวนอีกรอบนะ 🙏'}</p></div>`;
   $('go').style.display = $('close').style.display = 'block'; $('close').textContent = 'ปิด';
-  // เล่นต่ออัตโนมัติใน 3 วินาที
+  // แก้ตัว: ล้างเฉพาะข้อที่ตอบผิดแล้วถามใหม่
+  const wrong = qe.questions.map((q, i) => i).filter(i => S.ans[qk(qe, i)] !== qe.questions[i].a);
+  $('redo').style.display = 'none'; $('retry').style.display = wrong.length ? 'block' : 'none';
+  $('retry').textContent = `🔁 แก้ตัวข้อที่ผิด (${wrong.length} ข้อ)`;
+  $('retry').onclick = () => { clearInterval(timer); wrong.forEach(i => delete S.ans[qk(qe, i)]); save(); score(); renderPlayer(); renderList(); ask(wrong[0]) };
+  // เล่นต่ออัตโนมัติ (ถ้ามีข้อผิด รอนานขึ้นให้ทันกดแก้ตัว)
   const cont = qmode === 'end' ? nx : qmode === 'pending' || wasPlaying ? ep : null;
   if (!cont) { $('go').textContent = 'เสร็จสิ้น'; $('close').style.display = 'none'; return }
   const label = cont === ep && qmode !== 'end' ? 'ฟังต่อ' : `ฟัง ${partOf(cont).name} ${cont.name}`;
-  let k = 3;
+  let k = wrong.length ? 8 : 3;
   const t = () => { $('go').textContent = `${label} ▶ (${k})` };
   t(); clearInterval(timer);
   timer = setInterval(() => { if (--k <= 0) $('go').click(); else t() }, 1000);
 }
-const closeQuiz = () => { clearInterval(timer); $('modal').classList.remove('on'); $('opts').style.display = ''; $('qdots').className = 'qdots'; if (xm) { xm = false; renderHome() } };
+const closeQuiz = () => { clearInterval(timer); $('retry').style.display = $('redo').style.display = 'none'; $('modal').classList.remove('on'); $('opts').style.display = ''; $('qdots').className = 'qdots'; if (xm) { xm = false; renderHome() } };
 $('go').onclick = () => {
   if (xm) return examGo();
   const i = qe.questions.findIndex((q, k) => !(qk(qe, k) in S.ans));
@@ -657,8 +665,8 @@ function renderExam() {
   $('score').innerHTML = na ? `🏆 คะแนน <b>${xOk()}</b> / ${n}${na < n ? ` · ทำแล้ว ${na}` : ''}` : `📝 ยังไม่ได้เริ่มทำ`;
   $('bigplay').disabled = false; $('bigplay').innerHTML = I.play;
   renderExamList();
-  $('extra').innerHTML = examInfo() + (na ? '<button class="textbtn" id="xreset">เริ่มทำข้อสอบใหม่ทั้งหมด</button>' : '');
-  if (na) $('xreset').onclick = () => { if (confirm('ล้างคำตอบแนวข้อสอบแล้วเริ่มใหม่?')) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); renderHome() } };
+  $('extra').innerHTML = examInfo() + (na ? '<button class="textbtn" id="xreset">📝 ทำข้อสอบใหม่ทั้งหมด</button>' : '');
+  if (na) $('xreset').onclick = () => { if (confirm('ล้างคำตอบแล้วเริ่มทำข้อสอบใหม่ทั้ง 40 ข้อ? (ดาวที่ได้แล้วไม่หาย)')) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); renderHome() } };
 }
 function renderExamList() {
   let start = 0;
@@ -691,7 +699,7 @@ function examAsk(i) {
   xi = i;
   const q = XQ[i], n = XQ.length;
   $('qTag').textContent = `ข้อ ${i + 1}/${n} · คะแนน ${xOk()}`; xDots(i);
-  $('qText').textContent = q.q; $('fb').textContent = ''; $('go').style.display = 'none';
+  $('qText').textContent = q.q; $('fb').textContent = ''; $('go').style.display = $('retry').style.display = $('redo').style.display = 'none';
   $('close').textContent = 'พักก่อน (บันทึกไว้ให้แล้ว)'; $('close').style.display = 'block';
   const box = $('opts'); box.innerHTML = ''; box.style.display = '';
   xOrder(i).forEach((k, pos) => {
@@ -731,6 +739,10 @@ function examResult() {
     ${wrong.length ? `<div class="wrong"><h4>ทวนข้อที่ผิด (${wrong.length} ข้อ)</h4>${wrong.map(({ q, i }) => `<div><b>${i + 1}. ${q.q}</b><s>${q.choices[S.exam.ans[i]]}</s><span>✓ ${q.choices[q.a]}${q.explain ? ` — ${q.explain}` : ''}</span></div>`).join('')}</div>` : ''}`;
   $('qText').style.fontSize = '';
   $('go').textContent = 'เสร็จสิ้น'; $('go').style.display = 'block'; $('close').style.display = 'none';
+  $('retry').style.display = wrong.length ? 'block' : 'none'; $('retry').textContent = `🔁 แก้ตัวเฉพาะข้อที่ผิด (${wrong.length} ข้อ)`;
+  $('retry').onclick = () => { wrong.forEach(x => delete S.exam.ans[x.i]); save(); examAsk(wrong[0].i) };
+  $('redo').style.display = 'block'; $('redo').textContent = '📝 ทำข้อสอบใหม่ทั้งหมด';
+  $('redo').onclick = () => { if (confirm('ล้างคำตอบแล้วเริ่มทำข้อสอบใหม่ทั้ง 40 ข้อ? (ดาวที่ได้แล้วไม่หาย)')) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); examAsk(0) } };
   toTop();
 }
 
