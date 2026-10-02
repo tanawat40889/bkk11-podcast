@@ -179,6 +179,35 @@ button.badge{cursor:pointer}
 .wrong span{color:var(--acc)}.wrong s{color:var(--bad);display:block}
 .textbtn{color:var(--mute);text-decoration:underline;font-size:13px;margin:0 auto;display:block;padding:8px}
 
+/* ---------- กล่องคำถาม: ใหญ่ อ่านง่าย กดง่าย ---------- */
+.sheet{max-width:820px;gap:16px}
+.q{font-size:22px;line-height:1.45}
+.opts{gap:10px}
+.opt{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:center;padding:14px 16px;border-radius:12px;font-size:17px;line-height:1.45;min-height:60px;border:2px solid transparent}
+.opt .k{width:36px;height:36px;border-radius:50%;background:#ffffff1f;display:grid;place-items:center;font-weight:700;font-size:16px}
+.opt:hover:not(:disabled){border-color:#ffffff66}
+.opt.ok .k,.opt.bad .k{background:#0003}
+.tag{font-size:14px}
+.qdots i{height:6px;border-radius:3px}
+.fb{font-size:17px}
+.go{padding:16px;font-size:17px}
+@media (max-width:599px){
+  .sheet{height:100dvh;max-height:100dvh;border-radius:0;padding:calc(18px + var(--st)) 18px calc(18px + var(--sb))}
+  .grab{display:none}
+  .fb{margin-top:auto}
+  .fb:empty{min-height:0}
+}
+@media (min-width:600px){
+  .sheet{padding:32px 40px 36px;gap:20px;min-height:min(620px,88dvh);border-radius:20px}
+  .grab{display:none}
+  .q{font-size:27px}
+  .opt{font-size:20px;padding:18px 22px;min-height:72px;grid-template-columns:42px 1fr;gap:16px}
+  .opt .k{width:42px;height:42px;font-size:18px}
+  .tag{font-size:16px}
+  .fb{font-size:19px;margin-top:auto}
+  .go{font-size:18px;padding:18px}
+}
+
 /* ---------- ปุ่มติดตั้งแอป ---------- */
 .install{display:none;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:#fff;color:#000;font-size:13px;font-weight:700;white-space:nowrap}
 .install .ic{width:16px;height:16px}
@@ -522,7 +551,7 @@ function ask(i) {
   const box = $('opts'); box.innerHTML = ''; box.style.display = '';
   q.choices.forEach((c, k) => {
     const b = document.createElement('button');
-    b.className = 'opt'; b.textContent = c;
+    b.className = 'opt'; b.innerHTML = `<span class="k">${'กขคง'[k] || k + 1}</span><span></span>`; b.lastChild.textContent = c;
     b.onclick = () => {
       S.ans[qk(qe, i)] = k; save(); dots(-1);
       [...box.children].forEach((x, j) => { x.disabled = true; if (j === q.a) x.classList.add('ok') });
@@ -628,9 +657,9 @@ function examAsk(i) {
   $('qText').textContent = q.q; $('fb').textContent = ''; $('go').style.display = 'none';
   $('close').textContent = 'พักก่อน (บันทึกไว้ให้แล้ว)'; $('close').style.display = 'block';
   const box = $('opts'); box.innerHTML = ''; box.style.display = '';
-  xOrder(i).forEach(k => {
+  xOrder(i).forEach((k, pos) => {
     const b = document.createElement('button');
-    b.className = 'opt'; b.textContent = q.choices[k]; b.dataset.k = k;
+    b.className = 'opt'; b.innerHTML = `<span class="k">${'กขคง'[pos] || pos + 1}</span><span></span>`; b.lastChild.textContent = q.choices[k]; b.dataset.k = k;
     b.onclick = () => {
       S.exam.ans[i] = k; save(); xDots(-1);
       [...box.children].forEach(x => { x.disabled = true; if (+x.dataset.k === q.a) x.classList.add('ok') });
