@@ -179,6 +179,22 @@ button.badge{cursor:pointer}
 .wrong span{color:var(--acc)}.wrong s{color:var(--bad);display:block}
 .textbtn{color:var(--mute);text-decoration:underline;font-size:13px;margin:0 auto;display:block;padding:8px}
 
+/* ---------- ปุ่มติดตั้งแอป ---------- */
+.install{display:none;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:#fff;color:#000;font-size:13px;font-weight:700;white-space:nowrap}
+.install .ic{width:16px;height:16px}
+body.can-install .install{display:inline-flex}
+.hero>.install{position:absolute;top:calc(12px + var(--st));right:16px;z-index:1}
+@media (max-width:899px){body.can-install .hero{padding-top:calc(60px + var(--st))}}
+.help{position:fixed;inset:0;z-index:12;background:#000b;display:none;align-items:flex-end;justify-content:center}
+.help.on{display:flex}
+.help>div{width:100%;max-width:480px;background:var(--s2);border-radius:16px 16px 0 0;padding:22px 22px calc(22px + var(--sb));display:flex;flex-direction:column;gap:14px}
+.help h3{margin:0;font-size:19px;display:flex;align-items:center;gap:10px}
+.help h3 img{width:40px;height:40px;border-radius:10px}
+.help ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.5}
+.help p{margin:0;color:var(--mute);font-size:13px}
+.help button{padding:13px;border-radius:999px;background:#fff;color:#000;font-weight:700}
+@media (min-width:600px){.help{align-items:center}.help>div{border-radius:16px}}
+
 /* ---------- Desktop (≥900px): sidebar + แถบเล่นด้านล่าง ---------- */
 .side,.vol{display:none}
 @media (min-width:900px){
@@ -187,7 +203,9 @@ button.badge{cursor:pointer}
   body.has-ep .side{bottom:98px}
   .side>div{background:var(--bg);border-radius:8px;padding:16px}
   .brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px}
-  .brand img{width:36px;height:36px;border-radius:8px}
+  .brand{gap:10px;font-size:15px}.brand span{white-space:nowrap}
+  .brand img{width:32px;height:32px;border-radius:8px}
+  .brand .install{padding:6px 10px;font-size:12px}
   .lib{flex:1;overflow-y:auto;padding:8px!important}
   .lib h5{margin:8px 8px 10px;font-size:14px;color:var(--mute);font-weight:600}
   .lib button{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;width:100%;padding:8px;border-radius:6px;text-align:left}
@@ -214,6 +232,7 @@ button.badge{cursor:pointer}
   .textbtn{margin:0 40px}
   .foot{text-align:left;padding:28px 40px}
   .dock{display:none}
+  .hero>.install{display:none!important}
   /* แถบเล่น: ใช้ .np เดิม จัดเป็นแถวเดียว */
   .np{display:none;inset:auto 0 0 0;height:90px;transform:none!important;padding:0 16px;background:#000;overflow:visible}
   body.has-ep .np{display:block}
@@ -248,12 +267,13 @@ button.badge{cursor:pointer}
 </head>
 <body>
 <aside class="side">
-  <div class="brand"><img src="icons/icon-192.png" alt="" /><span>BKK11 Podcast</span></div>
+  <div class="brand"><img src="icons/icon-192.png" alt="" /><span style="flex:1">BKK11 Podcast</span><button class="install"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v9.6l3.3-3.3a1 1 0 1 1 1.4 1.4L12 17.4l-5.7-5.7a1 1 0 1 1 1.4-1.4l3.3 3.3V4a1 1 0 0 1 1-1zM5 19a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1z"/></svg>ติดตั้งแอป</button></div>
   <div class="lib"><h5>คลังติวธรรมะ</h5><div id="lib"></div></div>
   <div><div class="scorebox" id="score2"></div></div>
 </aside>
 <main class="home">
   <section class="hero">
+    <button class="install"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v9.6l3.3-3.3a1 1 0 1 1 1.4 1.4L12 17.4l-5.7-5.7a1 1 0 1 1 1.4-1.4l3.3 3.3V4a1 1 0 0 1 1-1zM5 19a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1z"/></svg>ติดตั้งแอป</button>
     <div id="heroCover"></div>
     <h1 id="heroTitle"></h1>
     <div class="by"><img src="icons/icon-192.png" alt="" /><span>BKK11 Podcast</span></div>
@@ -311,6 +331,12 @@ button.badge{cursor:pointer}
   <button class="go ghost" id="close">ปิด</button>
 </div></div>
 
+<div class="help" id="help"><div>
+  <h3><img src="icons/icon-192.png" alt="" />ติดตั้ง BKK11 Podcast</h3>
+  <ol id="helpSteps"></ol>
+  <p>ติดตั้งแล้วจะเปิดได้จากหน้าจอหลักเหมือนแอปทั่วไป เล่นเบื้องหลังได้ และจำตำแหน่งที่ฟังไว้ให้</p>
+  <button id="helpOk">เข้าใจแล้ว</button>
+</div></div>
 <audio id="au" preload="metadata" playsinline></audio>
 <script src="data.js"></script>
 <script src="exam.js"></script>
@@ -679,6 +705,25 @@ addEventListener('keydown', e => {
   else if (e.code === 'ArrowLeft') seek(au.currentTime - 15);
   else if (e.code === 'ArrowRight') seek(au.currentTime + 15);
 });
+// ปุ่มติดตั้งแอป: Chrome/Edge/Android ใช้ prompt ของเบราว์เซอร์, iOS/Safari แสดงวิธีทำ
+{
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const android = /android/i.test(navigator.userAgent);
+  const ios = !android && (/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+  let dp = null;
+  if (!standalone) document.body.classList.add('can-install');
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); dp = e });
+  addEventListener('appinstalled', () => document.body.classList.remove('can-install'));
+  const steps = ios ? ['แตะปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรชี้ขึ้น) ที่แถบเบราว์เซอร์', 'เลื่อนลงแล้วเลือก <b>เพิ่มไปยังหน้าจอโฮม</b> (Add to Home Screen)', 'แตะ <b>เพิ่ม</b> มุมขวาบน']
+    : android ? ['แตะเมนู <b>⋮</b> มุมขวาบนของเบราว์เซอร์', 'เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มไปยังหน้าจอหลัก</b>', 'แตะ <b>ติดตั้ง</b>']
+    : ['<b>Chrome / Edge:</b> คลิกไอคอนติดตั้งทางขวาของแถบที่อยู่ หรือเมนู ⋮ → <b>ติดตั้ง BKK11 Podcast</b>', '<b>Safari (Mac):</b> เมนู File → <b>Add to Dock</b>'];
+  document.querySelectorAll('.install').forEach(b => b.onclick = async () => {
+    if (dp) { dp.prompt(); const r = await dp.userChoice; dp = null; if (r.outcome === 'accepted') document.body.classList.remove('can-install'); return }
+    $('helpSteps').innerHTML = steps.map(t => `<li>${t}</li>`).join(''); $('help').classList.add('on');
+  });
+  $('helpOk').onclick = () => $('help').classList.remove('on');
+  $('help').onclick = e => { if (e.target === $('help')) $('help').classList.remove('on') };
+}
 renderHome(); score(); tick();
 // เปิดแอปมา: โหลดตอนล่าสุดค้างไว้ที่ตำแหน่งเดิม (ยังไม่เล่นจนกว่าจะกด)
 { const last = allEps.find(e => e.id === S.last); if (last) load(last, false) }
