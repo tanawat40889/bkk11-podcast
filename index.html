@@ -178,9 +178,80 @@ button.badge{cursor:pointer}
 .wrong b{display:block;font-weight:500;margin-bottom:4px}
 .wrong span{color:var(--acc)}.wrong s{color:var(--bad);display:block}
 .textbtn{color:var(--mute);text-decoration:underline;font-size:13px;margin:0 auto;display:block;padding:8px}
+
+/* ---------- Desktop (≥900px): sidebar + แถบเล่นด้านล่าง ---------- */
+.side,.vol{display:none}
+@media (min-width:900px){
+  body{background:#000}
+  .side{display:flex;flex-direction:column;gap:8px;position:fixed;left:8px;top:8px;bottom:8px;width:300px;z-index:4;transition:bottom .2s}
+  body.has-ep .side{bottom:98px}
+  .side>div{background:var(--bg);border-radius:8px;padding:16px}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px}
+  .brand img{width:36px;height:36px;border-radius:8px}
+  .lib{flex:1;overflow-y:auto;padding:8px!important}
+  .lib h5{margin:8px 8px 10px;font-size:14px;color:var(--mute);font-weight:600}
+  .lib button{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;width:100%;padding:8px;border-radius:6px;text-align:left}
+  .lib button:hover{background:#ffffff12}
+  .lib button.on{background:#ffffff1f}
+  .lib .cover{border-radius:4px;box-shadow:none}
+  .lib b{display:block;font-weight:500;font-size:15px}
+  .lib button.cur b{color:var(--acc)}
+  .lib small{color:var(--mute);font-size:13px}
+  .side .scorebox{border:0;padding:0;font-size:14px}
+  .home{max-width:none;margin:8px 8px 8px 316px;background:var(--bg);border-radius:8px;overflow:hidden;min-height:calc(100dvh - 16px);padding-bottom:32px}
+  body.has-ep .home{margin-bottom:98px;min-height:calc(100dvh - 106px)}
+  .hero{display:grid;grid-template-columns:232px 1fr;grid-template-areas:"cover title" "cover by" "cover meta" "act act";column-gap:24px;align-content:end;padding:72px 32px 24px}
+  .hero #heroCover{grid-area:cover}
+  .hero .cover{width:232px;margin:0}
+  .hero h1{grid-area:title;align-self:end;font-size:clamp(36px,5vw,72px);letter-spacing:-1.5px;margin-bottom:12px}
+  .hero .by{grid-area:by}.hero .meta{grid-area:meta}
+  .bar-actions{grid-area:act;margin-top:28px;flex-direction:row-reverse;justify-content:flex-end;gap:24px}
+  .bigplay{margin-left:0}
+  .list{padding:0 24px}
+  .row{grid-template-columns:40px 1fr auto;gap:16px;padding:12px 16px}
+  .row .pp{opacity:0;transition:opacity .15s}.row:hover .pp,.row.cur .pp{opacity:1}
+  .info{max-width:560px;margin:24px 40px}
+  .textbtn{margin:0 40px}
+  .foot{text-align:left;padding:28px 40px}
+  .dock{display:none}
+  /* แถบเล่น: ใช้ .np เดิม จัดเป็นแถวเดียว */
+  .np{display:none;inset:auto 0 0 0;height:90px;transform:none!important;padding:0 16px;background:#000;overflow:visible}
+  body.has-ep .np{display:block}
+  .np-in{max-width:none;height:100%;display:grid;gap:0 12px;align-items:center;
+    grid-template-columns:56px minmax(140px,1fr) 44px minmax(200px,2fr) 44px minmax(140px,1fr);
+    grid-template-areas:"cover meta ctl ctl ctl right" "cover meta cur scrub rem right";grid-template-rows:48px 24px;align-content:center}
+  .np-top{display:none}
+  #npCover{grid-area:cover;display:block!important}
+  .np .cover{width:56px;max-width:none;margin:0;border-radius:4px;box-shadow:none}
+  .np .cover .c-t,.np .cover .c-b,.np .cover .c-p{display:none}
+  .np-meta{grid-area:meta;min-width:0}
+  .np-meta h2{font-size:14px;font-weight:600;-webkit-line-clamp:1}
+  .np-meta p{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .qpill{font-size:11px;padding:3px 8px}
+  .ctl{grid-area:ctl;justify-content:center;gap:16px}
+  .ctl button{width:32px;height:32px;color:var(--mute)}.ctl button:hover:not(:disabled){color:#fff}
+  .ctl .ic{width:20px;height:20px}
+  .ctl .main{width:36px;height:36px;color:#000}.ctl .main:hover{color:#000;transform:scale(1.06)}
+  .ctl .main .ic{width:18px;height:18px}
+  .scrub{grid-area:scrub}
+  .knob{opacity:0}.scrub:hover .knob,.scrub.drag .knob{opacity:1}
+  .times{display:contents;margin:0}
+  #cur{grid-area:cur;text-align:right}#rem{grid-area:rem}
+  #cur,#rem{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+  .vol{grid-area:right;display:flex;align-items:center;justify-content:flex-end;gap:8px;color:var(--mute)}
+  .vol .ic{width:18px;height:18px}
+  .vol input{width:100px;accent-color:#fff;height:4px}
+  .vol input:hover{accent-color:var(--acc)}
+  .sheet{max-height:88dvh}
+}
 </style>
 </head>
 <body>
+<aside class="side">
+  <div class="brand"><img src="icons/icon-192.png" alt="" /><span>BKK11 Podcast</span></div>
+  <div class="lib"><h5>คลังติวธรรมะ</h5><div id="lib"></div></div>
+  <div><div class="scorebox" id="score2"></div></div>
+</aside>
 <main class="home">
   <section class="hero">
     <div id="heroCover"></div>
@@ -225,6 +296,7 @@ button.badge{cursor:pointer}
       <button id="fwd" aria-label="ข้าม 15 วินาที"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 8.5 12 1 1 0 1 0-1.9-.7A7 7 0 1 1 12 5v2.5L16.5 4 12 .5V3z"/><text x="12" y="15.8" font-size="7" font-weight="700" text-anchor="middle" font-family="Prompt,sans-serif">15</text></svg></button>
       <button id="next" aria-label="ตอนถัดไป"><svg class="ic" viewBox="0 0 24 24"><path d="M17.7 3a.7.7 0 0 0-.7.7v6.8L5.1 3.2A.7.7 0 0 0 4 3.8v16.4a.7.7 0 0 0 1.1.6L17 13.5v6.8a.7.7 0 0 0 .7.7h1.6a.7.7 0 0 0 .7-.7V3.7a.7.7 0 0 0-.7-.7h-1.6z"/></svg></button>
     </div>
+    <label class="vol"><svg class="ic" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg><input type="range" id="vol" min="0" max="1" step="0.05" value="1" aria-label="ระดับเสียง" /></label>
   </div>
 </section>
 
@@ -270,7 +342,7 @@ const posOf = e => e === ep ? au.currentTime : (S.pos[e.id] || 0);
 function score() {
   let ok = 0, tot = 0;
   allEps.forEach(e => { tot += e.questions.length; ok += correct(e) });
-  $('score').innerHTML = `🏆 คะแนน <b>${ok}</b> / ${tot}`;
+  $('score').innerHTML = $('score2').innerHTML = `🏆 คะแนนท้ายตอน <b>${ok}</b> / ${tot}`;
 }
 function renderHome() {
   setColor(view);
@@ -278,6 +350,12 @@ function renderHome() {
     `<button class="chip${p === view ? ' on' : ''}${p.episodes.length ? '' : ' locked'}" data-i="${i}">${p.episodes.length ? '' : '🔒 '}${p.name}</button>`).join('')
     + `<button class="chip${view === X ? ' on' : ''}" data-i="x">📝 ${X.name}</button>`;
   $('chips').querySelectorAll('.chip').forEach(b => b.onclick = () => { view = b.dataset.i === 'x' ? X : P.parts[b.dataset.i]; renderHome(); scrollTo(0, 0) });
+  const items = [...P.parts, X];
+  $('lib').innerHTML = items.map((p, i) => `<button class="${p === view ? 'on' : ''}${ep && partOf(ep) === p ? ' cur' : ''}" data-i="${i}">
+    <div style="--pc:${p.color}">${cover(p, true)}</div>
+    <div><b>${p === X ? X.name : `ติวธรรมะ ${p.name}`}</b><small>${p === X ? `ข้อสอบ · ${XQ.length} ข้อ` : `พอดแคสต์ · ${p.episodes.length} ตอน`}</small></div>
+    ${ep && partOf(ep) === p ? `<div class="eq${au.paused ? ' stop' : ''}"><i></i><i></i><i></i></div>` : '<span></span>'}</button>`).join('');
+  $('lib').querySelectorAll('button').forEach(b => b.onclick = () => { view = items[b.dataset.i]; renderHome(); scrollTo(0, 0) });
   $('heroCover').innerHTML = cover(view);
   if (view === X) return renderExam();
   $('extra').innerHTML = ''; score();
@@ -320,7 +398,8 @@ function renderPlayer() {
   $('npQ').textContent = !nq ? '' : na === nq ? `🏆 ${correct(ep)}/${nq}` : `📝 ${nq} ข้อท้ายตอน`; $('npQ').style.display = nq ? '' : 'none';
   $('miniQ').textContent = quizOpen(ep) ? '📝' : '';
   $('next').disabled = !after(ep);
-  $('mini').classList.add('on');
+  $('mini').classList.add('on'); document.body.classList.add('has-ep');
+  $('mini').style.setProperty('--pc', p.color); $('np').style.setProperty('--pc', p.color);
 }
 function load(e, auto) {
   if (ep && au.readyState && !au.ended) { S.pos[ep.id] = au.currentTime; save() }
@@ -592,6 +671,14 @@ $('reset').onclick = () => {
   renderHome();
 };
 window.onbeforeunload = () => { if (ep && au.readyState) { S.pos[ep.id] = au.currentTime; save() } };
+// คอมพิวเตอร์: ระดับเสียง + คีย์ลัด (Space เล่น/หยุด, ←/→ ย้อน/ข้าม 15 วิ)
+$('vol').oninput = e => au.volume = +e.target.value;
+addEventListener('keydown', e => {
+  if (!ep || $('modal').classList.contains('on') || e.metaKey || e.ctrlKey || e.altKey || e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); document.activeElement.blur(); toggle() }
+  else if (e.code === 'ArrowLeft') seek(au.currentTime - 15);
+  else if (e.code === 'ArrowRight') seek(au.currentTime + 15);
+});
 renderHome(); score(); tick();
 // เปิดแอปมา: โหลดตอนล่าสุดค้างไว้ที่ตำแหน่งเดิม (ยังไม่เล่นจนกว่าจะกด)
 { const last = allEps.find(e => e.id === S.last); if (last) load(last, false) }
