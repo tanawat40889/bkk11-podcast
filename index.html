@@ -258,6 +258,12 @@ body.can-install .install{display:inline-flex}
 .rw-bd span{display:block;font-size:26px;margin-bottom:4px}
 .help h4{margin:4px 0 -4px;font-size:14px;color:var(--mute);font-weight:600}
 .help button.ghost{background:none;color:var(--mute);border:1px solid var(--s3)}
+.help button.gold{background:#ffd166}
+.rw-card{display:flex;flex-direction:column;align-items:center;gap:8px}
+.rw-card img{width:min(100%,280px);aspect-ratio:4/5;border-radius:14px;background:#1f1f1f;box-shadow:0 8px 24px #0008;-webkit-touch-callout:default;user-select:auto}
+.rw-card small{color:var(--mute);font-size:12px;text-align:center}
+.rw-card input{width:min(100%,280px);padding:11px 14px;border-radius:10px;border:1px solid var(--s3);background:#1f1f1f;color:var(--text);font:inherit;font-size:15px;text-align:center}
+.rw-card input:focus{outline:none;border-color:#ffd166}
 .toast{position:fixed;left:50%;top:calc(16px + var(--st));transform:translate(-50%,-140%);z-index:20;padding:12px 20px;border-radius:999px;
   background:#ffd166;color:#000;font-weight:700;font-size:15px;white-space:nowrap;box-shadow:0 8px 24px #0008;transition:transform .35s cubic-bezier(.2,.8,.2,1);pointer-events:none}
 .toast.on{transform:translate(-50%,0)}
@@ -880,6 +886,62 @@ function checkStars() {
   lastStars = p.stars; lastLv = p.lv;
   if ($('rw').classList.contains('on')) renderRewards();
 }
+// ---------- การ์ดรูปภาพสำหรับแชร์ (วาดด้วย canvas แล้วแชร์เป็นไฟล์รูป) ----------
+let cardBlob = null, cardUrl = '', cardT = 0;
+function drawCard(p) {
+  const W = 1080, H = 1350, c = document.createElement('canvas'), x = c.getContext('2d'), l = LV[p.lv];
+  c.width = W; c.height = H;
+  const F = (w, px) => `${w} ${px}px Prompt, sans-serif`;
+  const rr = (X, Y, w, h, r) => { x.beginPath(); x.roundRect ? x.roundRect(X, Y, w, h, r) : x.rect(X, Y, w, h); };
+  let g = x.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#5b3fd6'); g.addColorStop(.55, '#1c1436'); g.addColorStop(1, '#0d0d0d');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  g = x.createRadialGradient(W / 2, 360, 0, W / 2, 360, 460);
+  g.addColorStop(0, 'rgba(255,209,102,.32)'); g.addColorStop(1, 'rgba(255,209,102,0)');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+  x.fillStyle = 'rgba(255,255,255,.8)'; x.font = F(700, 40); x.fillText('🎧 BKK11 Podcast · ติวธรรมะ', W / 2, 100);
+  if (S.name) { x.fillStyle = '#fff'; x.font = F(600, 50); x.fillText(S.name, W / 2, 180) }
+  x.font = '220px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; x.fillStyle = '#fff'; x.fillText(l[2], W / 2, 450);
+  x.font = F(800, 96); x.fillText(l[1], W / 2, 580);
+  x.fillStyle = '#ffd166'; x.font = F(800, 72); x.fillText(`⭐ ${p.stars} / ${p.total} ดาว`, W / 2, 680);
+  x.fillStyle = 'rgba(255,255,255,.15)'; rr(140, 716, 800, 24, 12); x.fill();
+  if (p.stars) { g = x.createLinearGradient(140, 0, 940, 0); g.addColorStop(0, '#ffd166'); g.addColorStop(1, '#ff9f43'); x.fillStyle = g; rr(140, 716, Math.max(24, 800 * p.stars / p.total), 24, 12); x.fill() }
+  [['🎧 ฟังจบ', `${p.fin}/${allEps.length} ตอน`], ['❓ ท้ายตอนถูก', `${p.quiz}/${p.quizTot} ข้อ`], ['📝 แนวข้อสอบ', `${S.xbest}/${XQ.length} ข้อ`], ['🔥 ติวต่อเนื่อง', `${p.st.n || 0} วัน`]].forEach((t, i) => {
+    const X = 140 + (i % 2) * 415, Y = 790 + Math.floor(i / 2) * 150;
+    x.fillStyle = 'rgba(255,255,255,.08)'; rr(X, Y, 385, 126, 20); x.fill();
+    x.fillStyle = 'rgba(255,255,255,.7)'; x.font = F(400, 30); x.fillText(t[0], X + 192, Y + 48);
+    x.fillStyle = '#fff'; x.font = F(800, 46); x.fillText(t[1], X + 192, Y + 102);
+  });
+  x.fillStyle = 'rgba(255,255,255,.7)'; x.font = F(600, 32); x.fillText(`เหรียญรางวัล ${p.badges.filter(b => b[2]).length} / ${p.badges.length}`, W / 2, 1130);
+  p.badges.forEach((b, i) => {
+    const cx = (W - (p.badges.length - 1) * 76) / 2 + i * 76, cy = 1190;
+    x.globalAlpha = b[2] ? 1 : .22;
+    x.fillStyle = b[2] ? 'rgba(255,209,102,.25)' : 'rgba(255,255,255,.12)'; x.beginPath(); x.arc(cx, cy, 34, 0, 7); x.fill();
+    x.font = '36px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; x.fillStyle = '#fff'; x.fillText(b[0], cx, cy + 13);
+    x.globalAlpha = 1;
+  });
+  x.fillStyle = '#fff'; x.font = F(600, 34); x.fillText('มาติวด้วยกัน 👉 tanawat40889.github.io/bkk11-podcast', W / 2, 1300);
+  return c;
+}
+async function buildCard() {
+  try { await Promise.all([400, 600, 700, 800].map(w => document.fonts.load(`${w} 40px Prompt`, 'ติวธรรมะ'))) } catch {}
+  const c = drawCard(prog());
+  cardBlob = await new Promise(r => c.toBlob(r, 'image/png'));
+  if (cardUrl) URL.revokeObjectURL(cardUrl);
+  cardUrl = URL.createObjectURL(cardBlob);
+  if ($('rwImg')) $('rwImg').src = cardUrl;
+}
+async function sharePic() {
+  if (!cardBlob) await buildCard();
+  const file = new File([cardBlob], 'bkk11-podcast.png', { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file] }) } catch {}
+    return;
+  }
+  const a = document.createElement('a'); a.href = cardUrl; a.download = 'bkk11-podcast.png'; a.click();
+  toast('บันทึกรูปแล้ว เอาไปส่งใน LINE ได้เลย');
+}
 function renderRewards() {
   const p = prog(), l = LV[p.lv], nx = LV[p.lv + 1];
   $('rwBody').innerHTML = `<div class="rw-top"><div class="em">${l[2]}</div><h3>${l[1]}</h3><div class="n">⭐ ${p.stars} / ${p.total} ดาว</div>
@@ -892,7 +954,16 @@ function renderRewards() {
       <div><span>🔥 เข้ามาติวต่อเนื่อง</span><b>${p.st.n || 0} วัน</b></div></div>
     <h4>เหรียญรางวัล ${p.badges.filter(b => b[2]).length} / ${p.badges.length}</h4>
     <div class="rw-bd">${p.badges.map(b => `<div class="${b[2] ? 'got' : ''}"><span>${b[0]}</span>${b[1]}</div>`).join('')}</div>
-    <button id="rwShare">📣 แชร์ชวนเพื่อนมาติว</button><button class="ghost" id="rwClose">ปิด</button>`;
+    <h4>การ์ดโชว์ผลงาน</h4>
+    <div class="rw-card"><input id="rwName" maxlength="20" placeholder="ใส่ชื่อเล่นบนรูป (ไม่ใส่ก็ได้)" />
+      <img id="rwImg" alt="การ์ดสรุปดาวและเหรียญ" /><small>กดปุ่มด้านล่างเพื่อส่งรูปเข้า LINE หรือกดค้างที่รูปเพื่อบันทึก</small></div>
+    <button class="gold" id="rwPic">📸 แชร์รูปไปขิงเพื่อน</button>
+    <button id="rwShare">📣 แชร์ลิงก์ชวนเพื่อนมาติว</button><button class="ghost" id="rwClose">ปิด</button>`;
+  $('rwName').value = S.name || '';
+  $('rwName').oninput = e => { S.name = e.target.value.trim(); store(); clearTimeout(cardT); cardT = setTimeout(buildCard, 350) };
+  $('rwPic').onclick = sharePic;
+  if (cardUrl) $('rwImg').src = cardUrl;
+  buildCard();
   $('rwClose').onclick = () => $('rw').classList.remove('on');
   $('rwShare').onclick = async () => {
     const text = `ฉันเก็บได้ ⭐ ${p.stars}/${p.total} ดาว ระดับ "${l[1]}" ${l[2]} ใน BKK11 Podcast ติวธรรมะ 🎧 มาติวด้วยกันนะ!`;
