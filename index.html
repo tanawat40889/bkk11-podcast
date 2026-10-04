@@ -260,6 +260,10 @@ body.can-install .install{display:inline-flex}
 .help h4{margin:4px 0 -4px;font-size:14px;color:var(--mute);font-weight:600}
 .help button.ghost{background:none;color:var(--mute);border:1px solid var(--s3)}
 .help button.gold{background:#ffd166}
+.help button.xbtn{position:sticky;top:0;align-self:flex-end;flex:none;width:36px;height:36px;margin:-6px -6px -50px 0;padding:0;border-radius:50%;background:#e5383b;color:#fff;font-size:17px;font-weight:700;line-height:1;z-index:2;box-shadow:0 2px 8px #0006}
+.help button.xbtn:hover{background:#ff4d4f}
+.help h3{padding-right:40px}
+.rw-top h3{padding-right:0}
 .help .lead{color:var(--text);font-size:15px;line-height:1.65}
 .help .lead b{color:#ffd166}
 .steps{list-style:none;padding:0!important;gap:12px!important}
@@ -444,6 +448,7 @@ body.can-install .install{display:inline-flex}
 <div class="help" id="rw"><div id="rwBody"></div></div>
 <div class="tour" id="tour"><div class="tour-hole" id="tourHole"></div><div class="tour-tip" id="tourTip"><b id="tourT"></b><p id="tourD"></p><div><button id="tourSkip">ข้าม</button><small id="tourN"></small><button class="nx" id="tourNext">ถัดไป</button></div></div></div>
 <div class="help" id="intro"><div>
+  <button class="xbtn" aria-label="ปิด">✕</button>
   <h3><img src="icons/icon-192.png" alt="" />ยินดีต้อนรับสู่ BKK11 Podcast</h3>
   <p class="lead">Podcast นี้ถูกแบ่งออกมาทั้งหมดเป็น <b>9 ตอน</b> แต่ละตอนยาวประมาณ <b>20–30 นาที</b> สามารถแบ่งฟังได้วันละ 1 ตอน เพื่อให้ใช้เวลาเรียนในแต่ละวันไม่มากจนเกินไป นอกจากนี้ยังมี<b>แนวข้อสอบ</b>ที่จัดทำโดยรวมภาคยุวชน ให้ทดลองทำเพื่อทบทวนความรู้ก่อนเข้าสอบ</p>
   <h4>วิธีใช้งานเบื้องต้น</h4>
@@ -458,6 +463,7 @@ body.can-install .install{display:inline-flex}
   <button class="ghost" id="introTour">👆 พาชมหน้าจอทีละจุด</button>
 </div></div>
 <div class="help" id="help"><div>
+  <button class="xbtn" aria-label="ปิด">✕</button>
   <h3><img src="icons/icon-192.png" alt="" />ติดตั้ง BKK11 Podcast</h3>
   <ol id="helpSteps"></ol>
   <p>ติดตั้งแล้วจะเปิดได้จากหน้าจอหลักเหมือนแอปทั่วไป เล่นเบื้องหลังได้ และจำตำแหน่งที่ฟังไว้ให้</p>
@@ -935,7 +941,7 @@ addEventListener('keydown', e => {
     if (dp) { dp.prompt(); const r = await dp.userChoice; dp = null; if (r.outcome === 'accepted') document.body.classList.remove('can-install'); return }
     $('helpSteps').innerHTML = steps.map(t => `<li>${t}</li>`).join(''); $('help').classList.add('on');
   });
-  $('helpOk').onclick = () => $('help').classList.remove('on');
+  $('helpOk').onclick = $('help').querySelector('.xbtn').onclick = () => $('help').classList.remove('on');
   $('help').onclick = e => { if (e.target === $('help')) $('help').classList.remove('on') };
 }
 // แนะนำการใช้งาน (ทัวร์ชี้ทีละจุด → หน้าต่างแนะนำ): แสดงเองแค่ครั้งแรกครั้งเดียว (เปิดดูซ้ำได้จากลิงก์ "วิธีใช้งาน" ท้ายหน้า)
@@ -986,7 +992,7 @@ addEventListener('keydown', e => {
   addEventListener('resize', place); addEventListener('scroll', place, { passive: true });
   const close = () => { $('intro').classList.remove('on'); try { localStorage.setItem(KEY_INTRO, '1') } catch {} };
   $('introTour').onclick = () => { $('intro').classList.remove('on'); try { localStorage.setItem(KEY_INTRO, '1') } catch {} tourStart() };
-  $('introOk').onclick = close;
+  $('introOk').onclick = $('intro').querySelector('.xbtn').onclick = close;
   $('intro').onclick = e => { if (e.target === $('intro')) close() };
   $('howto').onclick = open;
   let seen = true; try { seen = !!localStorage.getItem(KEY_INTRO) } catch {}
@@ -1116,7 +1122,7 @@ async function sharePic() {
 }
 function renderRewards() {
   const p = prog(), l = LV[p.lv], nx = LV[p.lv + 1];
-  $('rwBody').innerHTML = `<div class="rw-top"><div class="em">${l[2]}</div><h3>${l[1]}</h3><div class="n">⭐ ${p.stars} / ${p.total} ดาว</div>
+  $('rwBody').innerHTML = `<button class="xbtn" aria-label="ปิด">✕</button><div class="rw-top"><div class="em">${l[2]}</div><h3>${l[1]}</h3><div class="n">⭐ ${p.stars} / ${p.total} ดาว</div>
       <div class="rw-bar"><i style="width:${nx ? (p.stars - p.curAt) / (p.nextAt - p.curAt) * 100 : 100}%"></i></div>
       <small>${nx ? `อีก ${p.nextAt - p.stars} ดาว เลื่อนเป็น ${nx[2]} ${nx[1]}` : 'เก็บดาวครบทุกดวงแล้ว สุดยอด!'}</small></div>
     <h4>เก็บดาวจากไหนได้บ้าง</h4>
@@ -1136,7 +1142,7 @@ function renderRewards() {
   $('rwPic').onclick = sharePic;
   if (cardUrl) $('rwImg').src = cardUrl;
   buildCard();
-  $('rwClose').onclick = () => $('rw').classList.remove('on');
+  $('rwClose').onclick = $('rwBody').querySelector('.xbtn').onclick = () => $('rw').classList.remove('on');
   $('rwShare').onclick = async () => {
     const text = `ฉันเก็บได้ ⭐ ${p.stars}/${p.total} ดาว ระดับ "${l[1]}" ${l[2]} ใน BKK11 Podcast ติวธรรมะ 🎧 มาติวด้วยกันนะ!`;
     try { if (navigator.share) return await navigator.share({ text, url: SHARE_URL }) } catch { return }
