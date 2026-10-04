@@ -286,6 +286,18 @@ body.can-install .install{display:inline-flex}
 .help button{padding:13px;border-radius:999px;background:#fff;color:#000;font-weight:700}
 @media (min-width:600px){.help{align-items:center}.help>div{border-radius:16px}}
 
+/* ---------- ทัวร์ชี้ทีละจุด ---------- */
+.tour{position:fixed;inset:0;z-index:30;display:none}
+.tour.on{display:block}
+.tour-hole{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px #000000d9,0 0 0 3px var(--acc);transition:left .3s,top .3s,width .3s,height .3s;pointer-events:none}
+.tour-tip{position:fixed;width:min(360px,calc(100vw - 32px));background:#fff;color:#000;border-radius:16px;padding:16px 16px 12px;box-shadow:0 12px 40px #000a;transition:left .3s,top .3s}
+.tour-tip b{display:block;font-size:17px;font-weight:700;margin-bottom:4px}
+.tour-tip p{margin:0 0 12px;font-size:14px;line-height:1.55;color:#333}
+.tour-tip div{display:flex;align-items:center;gap:10px}
+.tour-tip small{flex:1;color:#777;font-size:12px}
+.tour-tip button{padding:9px 16px;border-radius:999px;font-size:14px;font-weight:700;color:#555}
+.tour-tip .nx{background:var(--acc);color:#000}
+
 /* ---------- Desktop (≥900px): sidebar + แถบเล่นด้านล่าง ---------- */
 .side,.vol{display:none}
 @media (min-width:900px){
@@ -430,6 +442,7 @@ body.can-install .install{display:inline-flex}
 
 <div class="toast" id="toast"></div>
 <div class="help" id="rw"><div id="rwBody"></div></div>
+<div class="tour" id="tour"><div class="tour-hole" id="tourHole"></div><div class="tour-tip" id="tourTip"><b id="tourT"></b><p id="tourD"></p><div><button id="tourSkip">ข้าม</button><small id="tourN"></small><button class="nx" id="tourNext">ถัดไป</button></div></div></div>
 <div class="help" id="intro"><div>
   <h3><img src="icons/icon-192.png" alt="" />ยินดีต้อนรับสู่ BKK11 Podcast</h3>
   <p class="lead">Podcast นี้ถูกแบ่งออกมาทั้งหมดเป็น <b>9 ตอน</b> แต่ละตอนยาวประมาณ <b>20–30 นาที</b> สามารถแบ่งฟังได้วันละ 1 ตอน เพื่อให้ใช้เวลาเรียนในแต่ละวันไม่มากจนเกินไป นอกจากนี้ยังมี<b>แนวข้อสอบ</b>ที่จัดทำโดยรวมภาคยุวชน ให้ทดลองทำเพื่อทบทวนความรู้ก่อนเข้าสอบ</p>
@@ -442,6 +455,7 @@ body.can-install .install{display:inline-flex}
   </ol>
   <div id="introInfo"></div>
   <button id="introOk">เริ่มกันเลย 🎧</button>
+  <button class="ghost" id="introTour">👆 พาชมหน้าจอทีละจุด</button>
 </div></div>
 <div class="help" id="help"><div>
   <h3><img src="icons/icon-192.png" alt="" />ติดตั้ง BKK11 Podcast</h3>
@@ -928,7 +942,50 @@ addEventListener('keydown', e => {
 {
   const KEY_INTRO = 'bkk11-podcast-intro';
   const open = () => { $('introInfo').innerHTML = examInfo(); $('intro').classList.add('on'); document.querySelector('#intro>div').scrollTop = 0 };
-  const close = () => { $('intro').classList.remove('on'); try { localStorage.setItem(KEY_INTRO, '1') } catch {} };
+  const KEY_TOUR = 'bkk11-podcast-tour';
+  // ทัวร์ชี้ทีละจุด: เจาะช่องสว่างที่ปุ่มจริงบนหน้าจอ พร้อมคำอธิบาย (ข้ามจุดที่ไม่ได้แสดงอยู่บนอุปกรณ์นั้น)
+  const TOUR = [
+    { sel: ['.list .row'], t: 'เลือกตอนที่อยากฟัง', d: 'กดที่ตอนเพื่อเริ่มเล่นได้เลย ระบบจำให้ว่าฟังถึงไหนแล้ว แบ่งฟังวันละตอนก็ได้' },
+    { sel: ['.list .qbtn'], t: 'ทำ Quiz ท้ายตอน', d: 'ฟังจบแล้วกดทำ Quiz ถ้าตอบผิดกดแก้ตัวได้ ยิ่งทำยิ่งได้ดาว ⭐' },
+    { sel: ['#bigplay'], t: 'ปุ่มเล่น', d: 'กดเพื่อเล่นต่อจากตอนที่ฟังค้างไว้ได้ทันที' },
+    { sel: ['#chips', '#lib'], t: 'สลับ Part และแนวข้อสอบ', d: 'เลือก Part 1–3 หรือกด “แนวข้อสอบ” เพื่อลองทำข้อสอบ 40 ข้อ พร้อมดูข้อมูลวันสอบ' },
+    { sel: ['.hero>.stars', '.side .stars'], t: 'ดาว ระดับ และเหรียญ', d: 'กดเพื่อดูความคืบหน้าของตัวเอง และแชร์รูปผลงานไปอวดเพื่อนใน LINE' },
+    { sel: ['.hero>.install', '.side .install'], t: 'ติดตั้งแอป', d: 'ติดตั้งไว้ที่หน้าจอหลัก จะเปิดใช้ได้เหมือนแอปทั่วไป' }
+  ];
+  let ti = -1, tel = null;
+  const visEl = q => [...document.querySelectorAll(q)].find(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(e).display !== 'none' });
+  const place = () => {
+    if (!tel) return;
+    const r = tel.getBoundingClientRect(), pad = 6, H = $('tourHole').style, T = $('tourTip');
+    H.left = r.left - pad + 'px'; H.top = r.top - pad + 'px'; H.width = r.width + pad * 2 + 'px'; H.height = r.height + pad * 2 + 'px';
+    const tw = T.offsetWidth, th = T.offsetHeight;
+    T.style.left = Math.max(16, Math.min(r.left, innerWidth - tw - 16)) + 'px';
+    T.style.top = (r.top + r.height / 2 < innerHeight / 2 ? Math.min(r.bottom + pad + 12, innerHeight - th - 12) : Math.max(12, r.top - pad - 12 - th)) + 'px';
+  };
+  const tourEnd = () => { $('tour').classList.remove('on'); tel = null; scrollTo(0, 0); try { localStorage.setItem(KEY_TOUR, '1') } catch {} };
+  const tourGo = i => {
+    const steps = TOUR.map(s => ({ ...s, el: s.sel.map(visEl).find(Boolean) })).filter(s => s.el);
+    if (i >= steps.length) return tourEnd();
+    ti = i; tel = steps[i].el;
+    $('tourT').textContent = steps[i].t; $('tourD').textContent = steps[i].d;
+    $('tourN').textContent = `${i + 1} / ${steps.length}`; $('tourNext').textContent = i === steps.length - 1 ? 'เสร็จสิ้น' : 'ถัดไป';
+    tel.scrollIntoView({ block: 'center' });
+    $('tour').classList.add('on'); place(); requestAnimationFrame(place); setTimeout(place, 350);
+  };
+  const tourStart = () => {
+    $('npClose').click(); view = P.parts.find(p => p.episodes.length) || view; renderHome(); scrollTo(0, 0);
+    tourGo(0);
+  };
+  $('tourNext').onclick = e => { e.stopPropagation(); tourGo(ti + 1) };
+  $('tourSkip').onclick = e => { e.stopPropagation(); tourEnd() };
+  $('tour').onclick = () => tourGo(ti + 1);
+  addEventListener('resize', place); addEventListener('scroll', place, { passive: true });
+  const close = () => {
+    $('intro').classList.remove('on'); try { localStorage.setItem(KEY_INTRO, '1') } catch {}
+    let seenTour = true; try { seenTour = !!localStorage.getItem(KEY_TOUR) } catch {}
+    if (!seenTour) tourStart();   // ครั้งแรก: ต่อด้วยทัวร์ชี้ทีละจุดหนึ่งรอบ
+  };
+  $('introTour').onclick = () => { $('intro').classList.remove('on'); try { localStorage.setItem(KEY_INTRO, '1') } catch {} tourStart() };
   $('introOk').onclick = close;
   $('intro').onclick = e => { if (e.target === $('intro')) close() };
   $('howto').onclick = open;
