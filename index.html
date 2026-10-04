@@ -938,7 +938,7 @@ addEventListener('keydown', e => {
   $('helpOk').onclick = () => $('help').classList.remove('on');
   $('help').onclick = e => { if (e.target === $('help')) $('help').classList.remove('on') };
 }
-// แนะนำการใช้งาน: แสดงเองแค่ครั้งแรกครั้งเดียว (เปิดดูซ้ำได้จากลิงก์ "วิธีใช้งาน" ท้ายหน้า)
+// แนะนำการใช้งาน (ทัวร์ชี้ทีละจุด → หน้าต่างแนะนำ): แสดงเองแค่ครั้งแรกครั้งเดียว (เปิดดูซ้ำได้จากลิงก์ "วิธีใช้งาน" ท้ายหน้า)
 {
   const KEY_INTRO = 'bkk11-podcast-intro';
   const open = () => { $('introInfo').innerHTML = examInfo(); $('intro').classList.add('on'); document.querySelector('#intro>div').scrollTop = 0 };
@@ -962,7 +962,11 @@ addEventListener('keydown', e => {
     T.style.left = Math.max(16, Math.min(r.left, innerWidth - tw - 16)) + 'px';
     T.style.top = (r.top + r.height / 2 < innerHeight / 2 ? Math.min(r.bottom + pad + 12, innerHeight - th - 12) : Math.max(12, r.top - pad - 12 - th)) + 'px';
   };
-  const tourEnd = () => { $('tour').classList.remove('on'); tel = null; scrollTo(0, 0); try { localStorage.setItem(KEY_TOUR, '1') } catch {} };
+  const tourEnd = () => {
+    $('tour').classList.remove('on'); tel = null; scrollTo(0, 0); try { localStorage.setItem(KEY_TOUR, '1') } catch {}
+    let seenIntro = true; try { seenIntro = !!localStorage.getItem(KEY_INTRO) } catch {}
+    if (!seenIntro) open();   // ครั้งแรก: จบทัวร์แล้วปิดท้ายด้วยหน้าต่างแนะนำ + ข้อมูลวันสอบ
+  };
   const tourGo = i => {
     const steps = TOUR.map(s => ({ ...s, el: s.sel.map(visEl).find(Boolean) })).filter(s => s.el);
     if (i >= steps.length) return tourEnd();
@@ -980,17 +984,14 @@ addEventListener('keydown', e => {
   $('tourSkip').onclick = e => { e.stopPropagation(); tourEnd() };
   $('tour').onclick = () => tourGo(ti + 1);
   addEventListener('resize', place); addEventListener('scroll', place, { passive: true });
-  const close = () => {
-    $('intro').classList.remove('on'); try { localStorage.setItem(KEY_INTRO, '1') } catch {}
-    let seenTour = true; try { seenTour = !!localStorage.getItem(KEY_TOUR) } catch {}
-    if (!seenTour) tourStart();   // ครั้งแรก: ต่อด้วยทัวร์ชี้ทีละจุดหนึ่งรอบ
-  };
+  const close = () => { $('intro').classList.remove('on'); try { localStorage.setItem(KEY_INTRO, '1') } catch {} };
   $('introTour').onclick = () => { $('intro').classList.remove('on'); try { localStorage.setItem(KEY_INTRO, '1') } catch {} tourStart() };
   $('introOk').onclick = close;
   $('intro').onclick = e => { if (e.target === $('intro')) close() };
   $('howto').onclick = open;
   let seen = true; try { seen = !!localStorage.getItem(KEY_INTRO) } catch {}
-  if (!seen && !/\bLine\//i.test(navigator.userAgent)) open();
+  // ครั้งแรก: พาชมทีละจุดก่อน แล้วค่อยแสดงหน้าต่างแนะนำเป็นอย่างสุดท้าย
+  if (!seen && !/\bLine\//i.test(navigator.userAgent)) setTimeout(tourStart, 500);
 }
 // ยังอยู่ใน LINE browser (ส่งต่อไม่สำเร็จ): บอกวิธีเปิดในเบราว์เซอร์เอง
 if (/\bLine\//i.test(navigator.userAgent)) {
