@@ -35,8 +35,10 @@ svg{display:block;fill:currentColor}
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:28px 8px calc(8px + var(--sb));pointer-events:none;
   background:linear-gradient(180deg,#12121200 0,#121212e6 28px,#121212 60%)}
 .dock-in{max-width:744px;margin:0 auto;display:flex;flex-direction:column;gap:8px;pointer-events:auto}
-.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;justify-content:center}
-.chip{flex:none;padding:7px 14px;border-radius:999px;background:#ffffff1f;font-size:14px;font-weight:500;white-space:nowrap}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.chip:first-child{margin-left:auto}.chip:last-child{margin-right:auto}
+@media (max-width:420px){.chips{gap:4px}.chips .chip{padding:7px 9px;font-size:13px}}
+.chip{flex:none;padding:7px 12px;border-radius:999px;background:#ffffff1f;font-size:14px;font-weight:500;white-space:nowrap}
 .chip.on{background:var(--acc);color:#000}
 .chip.locked{color:var(--mute)}
 .cover{aspect-ratio:1;border-radius:6px;position:relative;overflow:hidden;color:#fff;
@@ -450,12 +452,12 @@ body.can-install .install{display:inline-flex}
 <div class="help" id="intro"><div>
   <button class="xbtn" aria-label="ปิด">✕</button>
   <h3><img src="icons/icon-192.png" alt="" />ยินดีต้อนรับสู่ BKK11 Podcast</h3>
-  <p class="lead">Podcast นี้ถูกแบ่งออกมาทั้งหมดเป็น <b>9 ตอน</b> แต่ละตอนยาวประมาณ <b>20–30 นาที</b> สามารถแบ่งฟังได้วันละ 1 ตอน เพื่อให้ใช้เวลาเรียนในแต่ละวันไม่มากจนเกินไป นอกจากนี้ยังมี<b>แนวข้อสอบ</b>ที่จัดทำโดยรวมภาคยุวชน ให้ทดลองทำเพื่อทบทวนความรู้ก่อนเข้าสอบ</p>
+  <p class="lead">Podcast นี้ถูกแบ่งออกมาทั้งหมดเป็น <b>9 ตอน</b> แต่ละตอนยาวประมาณ <b>20–30 นาที</b> สามารถแบ่งฟังได้วันละ 1 ตอน เพื่อให้ใช้เวลาเรียนในแต่ละวันไม่มากจนเกินไป และมี<b>ตอนพิเศษ (Part 4)</b> ทบทวนประเด็นสำคัญก่อนสอบอีก 4 ตอน นอกจากนี้ยังมี<b>แนวข้อสอบ</b>ที่จัดทำโดยรวมภาคยุวชน ให้ทดลองทำเพื่อทบทวนความรู้ก่อนเข้าสอบ</p>
   <h4>วิธีใช้งานเบื้องต้น</h4>
   <ol class="steps">
-    <li><span>🎧</span><div><b>เลือก Part แล้วกดตอนที่อยากฟัง</b>ปุ่ม Part 1–3 อยู่ด้านล่างของจอ ระบบจำให้ว่าฟังถึงไหนแล้ว</div></li>
+    <li><span>🎧</span><div><b>เลือก Part แล้วกดตอนที่อยากฟัง</b>ปุ่ม Part 1–4 อยู่ด้านล่างของจอ ระบบจำให้ว่าฟังถึงไหนแล้ว</div></li>
     <li><span>📝</span><div><b>ฟังจบแล้วทำ Quiz ท้ายตอน</b>ตอบผิดกดแก้ตัวได้ ยิ่งทำยิ่งได้ดาว ⭐</div></li>
-    <li><span>🏆</span><div><b>ลองทำแนวข้อสอบ 40 ข้อ</b>กดปุ่ม “แนวข้อสอบ” ด้านล่าง มีสรุปคะแนนและทวนข้อที่ผิดให้</div></li>
+    <li><span>🏆</span><div><b>ลองทำแนวข้อสอบ 50 ข้อ</b>กดปุ่ม “แนวข้อสอบ” ด้านล่าง มีสรุปคะแนนและทวนข้อที่ผิดให้</div></li>
     <li><span>⭐</span><div><b>กดที่ดาวเพื่อดูระดับและเหรียญ</b>แชร์รูปผลงานไปอวดเพื่อนใน LINE ได้</div></li>
   </ol>
   <div id="introInfo"></div>
@@ -520,7 +522,7 @@ function renderHome() {
   $('extra').innerHTML = $('note').innerHTML = ''; $('xreset').hidden = true; score();
   $('heroTitle').textContent = `ติวธรรมะ ${view.name}`;
   const tot = view.episodes.reduce((a, e) => a + (e.dur || 0), 0);
-  $('heroMeta').textContent = view.episodes.length ? `วิดีโอติว · ${view.episodes.length} ตอน · ${mins(tot)} · ดูจบแล้วตอบคำถามท้ายตอน` : 'เร็ว ๆ นี้';
+  $('heroMeta').textContent = view.episodes.length ? `${view.tag ? view.tag + ' · ' : ''}วิดีโอติว · ${view.episodes.length} ตอน · ${mins(tot)} · ดูจบแล้วตอบคำถามท้ายตอน` : 'เร็ว ๆ นี้';
   $('bigplay').disabled = !view.episodes.length;
   $('bigplay').innerHTML = ep && partOf(ep) === view && !au.paused ? I.pause : I.play;
   renderList();
@@ -805,7 +807,7 @@ function renderExam() {
   renderExamList();
   $('extra').innerHTML = examInfo(); $('note').innerHTML = DISC;
   $('xreset').hidden = !na;
-  $('xreset').onclick = () => { if (confirm('ล้างคำตอบแล้วเริ่มทำข้อสอบใหม่ทั้ง 40 ข้อ? (ดาวที่ได้แล้วไม่หาย)')) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); renderHome() } };
+  $('xreset').onclick = () => { if (confirm(`ล้างคำตอบแล้วเริ่มทำข้อสอบใหม่ทั้ง ${XQ.length} ข้อ? (ดาวที่ได้แล้วไม่หาย)`)) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); renderHome() } };
 }
 function renderExamList() {
   let start = 0;
@@ -882,7 +884,7 @@ function examResult() {
   $('go').textContent = 'เสร็จสิ้น'; $('go').style.display = 'block'; $('close').style.display = 'none';
   $('retry').style.display = $('redo').style.display = 'none';
   if (wrong.length) $('xr1').onclick = () => { wrong.forEach(x => delete S.exam.ans[x.i]); save(); examAsk(wrong[0].i) };
-  $('xr2').onclick = () => { if (confirm('ล้างคำตอบแล้วเริ่มทำข้อสอบใหม่ทั้ง 40 ข้อ? (ดาวที่ได้แล้วไม่หาย)')) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); examAsk(0) } };
+  $('xr2').onclick = () => { if (confirm(`ล้างคำตอบแล้วเริ่มทำข้อสอบใหม่ทั้ง ${XQ.length} ข้อ? (ดาวที่ได้แล้วไม่หาย)`)) { S.exam = { ans: {}, seed: Date.now() % 1e9 }; save(); examAsk(0) } };
   toTop();
 }
 
@@ -954,7 +956,7 @@ addEventListener('keydown', e => {
     { sel: ['.list .row'], t: 'เลือกตอนที่อยากฟัง', d: 'กดที่ตอนเพื่อเริ่มเล่นได้เลย ระบบจำให้ว่าฟังถึงไหนแล้ว แบ่งฟังวันละตอนก็ได้' },
     { sel: ['.list .qbtn'], t: 'ทำ Quiz ท้ายตอน', d: 'ฟังจบแล้วกดทำ Quiz ถ้าตอบผิดกดแก้ตัวได้ ยิ่งทำยิ่งได้ดาว ⭐' },
     { sel: ['#bigplay'], t: 'ปุ่มเล่น', d: 'กดเพื่อเล่นต่อจากตอนที่ฟังค้างไว้ได้ทันที' },
-    { sel: ['#chips', '#lib'], t: 'สลับ Part และแนวข้อสอบ', d: 'เลือก Part 1–3 หรือกด “แนวข้อสอบ” เพื่อลองทำข้อสอบ 40 ข้อ พร้อมดูข้อมูลวันสอบ' },
+    { sel: ['#chips', '#lib'], t: 'สลับ Part และแนวข้อสอบ', d: 'เลือก Part 1–3, ตอนพิเศษ Part 4 หรือกด “แนวข้อสอบ” เพื่อลองทำข้อสอบ 50 ข้อ พร้อมดูข้อมูลวันสอบ' },
     { sel: ['.hero>.stars', '.side .stars'], t: 'ดาว ระดับ และเหรียญ', d: 'กดเพื่อดูความคืบหน้าของตัวเอง และแชร์รูปผลงานไปอวดเพื่อนใน LINE' },
     { sel: ['.hero>.install', '.side .install'], t: 'ติดตั้งแอป', d: 'ติดตั้งไว้ที่หน้าจอหลัก จะเปิดใช้ได้เหมือนแอปทั่วไป' }
   ];
