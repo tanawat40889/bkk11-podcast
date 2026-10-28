@@ -29,7 +29,7 @@ svg{display:block;fill:currentColor}
 .ic{width:24px;height:24px}
 
 /* ---------- Home ---------- */
-.home{max-width:760px;margin:0 auto;padding-bottom:calc(150px + var(--sb))}
+.home{max-width:760px;margin:0 auto;padding-bottom:calc(195px + var(--sb))}
 .hero{position:relative;padding:calc(28px + var(--st)) 16px 20px;
   background:linear-gradient(180deg,color-mix(in srgb,var(--pc) 75%,#000) 0%,color-mix(in srgb,var(--pc) 35%,var(--bg)) 55%,var(--bg) 100%);transition:background .4s}
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:28px 8px calc(8px + var(--sb));pointer-events:none;
@@ -292,6 +292,37 @@ body.can-install .install{display:inline-flex}
 .help button{padding:13px;border-radius:999px;background:#fff;color:#000;font-weight:700}
 @media (min-width:600px){.help{align-items:center}.help>div{border-radius:16px}}
 
+/* ---------- โหมดฟัง / อ่าน ---------- */
+.modes{display:flex;gap:4px;padding:4px;border-radius:999px;background:#ffffff14;align-self:center}
+.modes button{padding:7px 16px;border-radius:999px;font-size:14px;font-weight:600;color:var(--mute);white-space:nowrap}
+.modes button.on{background:#fff;color:#000}
+body.reading .home,body.reading .chips{display:none}
+.read{max-width:760px;margin:0 auto;padding:calc(20px + var(--st)) 16px calc(170px + var(--sb))}
+.rd-head small{color:var(--acc);font-weight:700;font-size:13px}
+.rd-head h1{margin:6px 0}
+.rd-head p{margin:0;color:var(--mute);font-size:13px}
+.rd-toc{position:sticky;top:0;z-index:3;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:16px -16px 8px;padding:10px 16px;background:var(--bg)}
+.rd-toc button{flex:none;padding:7px 12px;border-radius:999px;background:var(--s2);font-size:13px;font-weight:600;white-space:nowrap}
+.rd-toc button.on{background:var(--acc);color:#000}
+.rd-sec{scroll-margin-top:64px;margin:18px 0 28px}
+.rd-sec>h2{margin:0;font-size:22px;display:flex;gap:10px;align-items:center}
+.rd-sec>small{display:block;color:var(--mute);margin:2px 0 10px 40px}
+.rd-blk{background:var(--s1);border:1px solid var(--s2);border-radius:12px;padding:14px 16px;margin-top:10px}
+.rd-blk h3{margin:0 0 8px;font-size:16px;color:#ffd166}
+.rd-blk ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:7px;font-size:15px;line-height:1.6}
+.rd-blk ul ul{margin-top:6px;gap:4px;color:var(--mute);font-size:14px}
+.rd-blk li::marker{color:var(--acc)}
+@media (min-width:900px){
+  .side .modes{align-self:stretch;justify-content:stretch;margin-top:-4px}
+  .side .modes button{flex:1}
+  .read{margin:8px 8px 8px 316px;max-width:none;background:var(--bg);border-radius:8px;padding:40px 40px 40px}
+  body.has-ep .read{margin-bottom:98px}
+  .read>*{max-width:820px}
+  .rd-toc{margin:16px 0 8px;padding:10px 0}
+  .side>.modes{background:var(--bg);border-radius:8px;padding:8px}
+  body.reading #npCover{width:280px}
+}
+
 /* ---------- ทัวร์ชี้ทีละจุด ---------- */
 .tour{position:fixed;inset:0;z-index:30;display:none}
 .tour.on{display:block}
@@ -378,6 +409,7 @@ body.can-install .install{display:inline-flex}
 <body>
 <aside class="side">
   <div class="brand"><img src="icons/icon-192.png" alt="" /><span style="flex:1">BKK11 Podcast</span><button class="install"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 1 1v9.6l3.3-3.3a1 1 0 1 1 1.4 1.4L12 17.4l-5.7-5.7a1 1 0 1 1 1.4-1.4l3.3 3.3V4a1 1 0 0 1 1-1zM5 19a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1z"/></svg>ติดตั้งแอป</button></div>
+  <div class="modes" role="tablist"><button data-m="listen">🎧 ฟัง</button><button data-m="read">📖 อ่านสรุป</button></div>
   <div class="lib"><h5>คลังติวธรรมะ</h5><div id="lib"></div></div>
   <div style="display:flex;flex-direction:column;gap:10px"><button class="stars"></button><div class="rw-bar"><i id="sideBar"></i></div><div class="scorebox" id="score2"></div></div>
 </aside>
@@ -400,8 +432,15 @@ body.can-install .install{display:inline-flex}
   <div id="extra"></div>
   <div class="foot"><button id="howto">วิธีใช้งาน</button> · <button id="reset">รีเซ็ตคะแนนและตำแหน่งที่ฟังทั้งหมด</button></div>
 </main>
+<main class="read" id="read" hidden>
+  <header class="rd-head"><small>📖 โหมดอ่าน</small><h1 id="rdTitle"></h1><p id="rdNote"></p></header>
+  <nav class="rd-toc" id="rdToc"></nav>
+  <div id="rdBody"></div>
+  <div class="foot"><button id="rdTop">กลับขึ้นด้านบน ↑</button></div>
+</main>
 
 <div class="dock"><div class="dock-in">
+<div class="modes" role="tablist"><button data-m="listen">🎧 ฟัง</button><button data-m="read">📖 อ่านสรุป</button></div>
 <nav class="chips" id="chips"></nav>
 <div class="mini" id="mini">
   <div id="miniCover"></div>
@@ -473,6 +512,7 @@ body.can-install .install{display:inline-flex}
 </div></div>
 <script src="data.js"></script>
 <script src="exam.js"></script>
+<script src="summary.js"></script>
 <script>
 const P = window.PODCAST, $ = id => document.getElementById(id), au = makePlayer();
 const KEY = 'bkk11-podcast';
@@ -945,6 +985,40 @@ addEventListener('keydown', e => {
   });
   $('helpOk').onclick = $('help').querySelector('.xbtn').onclick = () => $('help').classList.remove('on');
   $('help').onclick = e => { if (e.target === $('help')) $('help').classList.remove('on') };
+}
+// ---------- โหมดฟัง / อ่านสรุป ----------
+{
+  const SM = window.SUMMARY, KEY_MODE = 'bkk11-podcast-mode';
+  const esc = t => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+  const list = items => '<ul>' + items.map((it, i) => Array.isArray(it) ? '' :
+    `<li>${esc(it)}${Array.isArray(items[i + 1]) ? '<ul>' + items[i + 1].map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : ''}</li>`).join('') + '</ul>';
+  $('rdTitle').textContent = SM.title; $('rdNote').textContent = SM.note;
+  $('rdToc').innerHTML = SM.sections.map(x => `<button data-id="${x.id}">${x.icon} ${x.title}</button>`).join('');
+  $('rdBody').innerHTML = SM.sections.map(x => `<section class="rd-sec" id="rd-${x.id}"><h2><span>${x.icon}</span>${esc(x.title)}</h2><small>${esc(x.sub)}</small>
+    ${x.blocks.map(b => `<div class="rd-blk">${b.h ? `<h3>${esc(b.h)}</h3>` : ''}${list(b.items)}</div>`).join('')}</section>`).join('');
+  $('rdToc').querySelectorAll('button').forEach(b => b.onclick = () => $('rd-' + b.dataset.id).scrollIntoView({ behavior: 'smooth' }));
+  $('rdTop').onclick = () => scrollTo({ top: 0, behavior: 'smooth' });
+  // ไฮไลต์หัวข้อที่กำลังอ่าน
+  const secs = [...document.querySelectorAll('.rd-sec')];
+  addEventListener('scroll', () => {
+    if (!document.body.classList.contains('reading')) return;
+    let cur = secs[0]; secs.forEach(x => { if (x.getBoundingClientRect().top < 120) cur = x });
+    $('rdToc').querySelectorAll('button').forEach(b => b.classList.toggle('on', 'rd-' + b.dataset.id === cur.id));
+  }, { passive: true });
+  let pos = { listen: 0, read: 0 }, mode = 'listen';
+  const setMode = m => {
+    if (m === mode && document.body.dataset.m) return;
+    pos[mode] = scrollY; mode = m; document.body.dataset.m = m;
+    document.body.classList.toggle('reading', m === 'read'); $('read').hidden = m !== 'read';
+    document.querySelectorAll('.modes button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+    try { localStorage.setItem(KEY_MODE, m) } catch {}
+    scrollTo(0, pos[m]); dispatchEvent(new Event('scroll'));
+  };
+  document.querySelectorAll('.modes button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+  // คลิกคลังติวธรรมะในแถบซ้าย = กลับไปโหมดฟัง
+  $('lib').addEventListener('click', () => mode === 'read' && setMode('listen'), true);
+  let m0 = 'listen'; try { m0 = localStorage.getItem(KEY_MODE) || 'listen' } catch {}
+  setMode(m0);
 }
 // แนะนำการใช้งาน (ทัวร์ชี้ทีละจุด → หน้าต่างแนะนำ): แสดงเองแค่ครั้งแรกครั้งเดียว (เปิดดูซ้ำได้จากลิงก์ "วิธีใช้งาน" ท้ายหน้า)
 {
